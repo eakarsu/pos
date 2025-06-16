@@ -51,8 +51,6 @@
     "**/*.spec.ts"
   ],
   "ts-node": {
-    "require": ["tsconfig-paths/register"],
-    "esm": true,
-    "experimentalSpecifierResolution": "node"
+    "require": ["tsconfig-paths/register"]
   }
 }
