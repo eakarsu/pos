@@ -37,6 +37,7 @@ model User {
   shifts      Shift[]
   auditLogs   AuditLog[]
   refreshTokens RefreshToken[]
+  inventoryMovements InventoryMovement[]
 
   @@map("users")
 }
