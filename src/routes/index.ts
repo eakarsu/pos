@@ -1,0 +1,46 @@
+import { Router } from 'express';
+import { config } from '../config/environment';
+
+const router = Router();
+
+// API version prefix
+const API_PREFIX = `/v${config.apiVersion}`;
+
+// Health check route
+router.get('/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'API is healthy',
+    timestamp: new Date().toISOString(),
+    version: config.apiVersion,
+  });
+});
+
+// API info route
+router.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'POS System API',
+    version: config.apiVersion,
+    endpoints: {
+      health: '/health',
+      docs: '/api-docs',
+      auth: `${API_PREFIX}/auth`,
+      products: `${API_PREFIX}/products`,
+      sales: `${API_PREFIX}/sales`,
+      customers: `${API_PREFIX}/customers`,
+      inventory: `${API_PREFIX}/inventory`,
+      reports: `${API_PREFIX}/reports`,
+    },
+  });
+});
+
+// TODO: Add route modules here
+// router.use(`${API_PREFIX}/auth`, authRoutes);
+// router.use(`${API_PREFIX}/products`, productRoutes);
+// router.use(`${API_PREFIX}/sales`, salesRoutes);
+// router.use(`${API_PREFIX}/customers`, customerRoutes);
+// router.use(`${API_PREFIX}/inventory`, inventoryRoutes);
+// router.use(`${API_PREFIX}/reports`, reportRoutes);
+
+export default router;
