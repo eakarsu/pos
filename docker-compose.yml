@@ -8,18 +8,16 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: pos_system
-      POSTGRES_USER: pos_user
-      POSTGRES_PASSWORD: pos_password
-      POSTGRES_INITDB_ARGS: "--auth-host=md5 --auth-local=md5"
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
     networks:
       - pos_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U pos_user -d pos_system"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d pos_system"]
       interval: 30s
       timeout: 10s
       retries: 3
