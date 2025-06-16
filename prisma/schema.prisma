@@ -1,0 +1,423 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Management
+model User {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  username    String   @unique
+  firstName   String
+  lastName    String
+  password    String
+  role        UserRole @default(CASHIER)
+  isActive    Boolean  @default(true)
+  lastLogin   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Employee specific fields
+  employeeId  String?  @unique
+  phone       String?
+  address     String?
+  hireDate    DateTime?
+  salary      Decimal?
+  commission  Decimal? @default(0)
+
+  // Relations
+  sales       Sale[]
+  shifts      Shift[]
+  auditLogs   AuditLog[]
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+// Customer Management
+model Customer {
+  id          String   @id @default(uuid())
+  email       String?  @unique
+  phone       String?  @unique
+  firstName   String
+  lastName    String
+  dateOfBirth DateTime?
+  address     String?
+  city        String?
+  state       String?
+  zipCode     String?
+  loyaltyPoints Int    @default(0)
+  totalSpent  Decimal  @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  sales       Sale[]
+  loyaltyTransactions LoyaltyTransaction[]
+
+  @@map("customers")
+}
+
+// Product Management
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  products    Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  sku         String   @unique
+  barcode     String?  @unique
+  price       Decimal
+  cost        Decimal  @default(0)
+  taxRate     Decimal  @default(0)
+  isActive    Boolean  @default(true)
+  isWeighed   Boolean  @default(false)
+  minStock    Int      @default(0)
+  maxStock    Int?
+  reorderPoint Int     @default(0)
+  categoryId  String?
+  supplierId  String?
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  category    Category? @relation(fields: [categoryId], references: [id])
+  supplier    Supplier? @relation(fields: [supplierId], references: [id])
+  variants    ProductVariant[]
+  inventory   InventoryItem[]
+  saleItems   SaleItem[]
+
+  @@map("products")
+}
+
+model ProductVariant {
+  id        String   @id @default(uuid())
+  productId String
+  name      String   // e.g., "Size", "Color"
+  value     String   // e.g., "Large", "Red"
+  sku       String   @unique
+  barcode   String?  @unique
+  price     Decimal?
+  cost      Decimal?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  inventory InventoryItem[]
+  saleItems SaleItem[]
+
+  @@map("product_variants")
+}
+
+// Supplier Management
+model Supplier {
+  id          String   @id @default(uuid())
+  name        String
+  contactName String?
+  email       String?
+  phone       String?
+  address     String?
+  city        String?
+  state       String?
+  zipCode     String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  products    Product[]
+
+  @@map("suppliers")
+}
+
+// Inventory Management
+model InventoryItem {
+  id              String   @id @default(uuid())
+  productId       String?
+  variantId       String?
+  quantity        Int      @default(0)
+  reservedQty     Int      @default(0)
+  location        String?
+  batchNumber     String?
+  expirationDate  DateTime?
+  lastUpdated     DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  // Relations
+  product         Product? @relation(fields: [productId], references: [id])
+  variant         ProductVariant? @relation(fields: [variantId], references: [id])
+  movements       InventoryMovement[]
+
+  @@unique([productId, variantId, batchNumber])
+  @@map("inventory_items")
+}
+
+model InventoryMovement {
+  id            String            @id @default(uuid())
+  inventoryId   String
+  type          MovementType
+  quantity      Int
+  reason        String?
+  referenceId   String?           // Sale ID, Purchase Order ID, etc.
+  userId        String?
+  createdAt     DateTime          @default(now())
+
+  // Relations
+  inventory     InventoryItem @relation(fields: [inventoryId], references: [id])
+  user          User?         @relation(fields: [userId], references: [id])
+
+  @@map("inventory_movements")
+}
+
+// Sales Management
+model Sale {
+  id            String      @id @default(uuid())
+  saleNumber    String      @unique
+  customerId    String?
+  userId        String
+  subtotal      Decimal
+  taxAmount     Decimal
+  discountAmount Decimal    @default(0)
+  totalAmount   Decimal
+  status        SaleStatus  @default(COMPLETED)
+  paymentStatus PaymentStatus @default(PAID)
+  notes         String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relations
+  customer      Customer?   @relation(fields: [customerId], references: [id])
+  user          User        @relation(fields: [userId], references: [id])
+  items         SaleItem[]
+  payments      Payment[]
+  returns       Return[]
+
+  @@map("sales")
+}
+
+model SaleItem {
+  id          String   @id @default(uuid())
+  saleId      String
+  productId   String?
+  variantId   String?
+  quantity    Decimal
+  unitPrice   Decimal
+  discount    Decimal  @default(0)
+  taxRate     Decimal  @default(0)
+  totalPrice  Decimal
+  createdAt   DateTime @default(now())
+
+  // Relations
+  sale        Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product     Product? @relation(fields: [productId], references: [id])
+  variant     ProductVariant? @relation(fields: [variantId], references: [id])
+
+  @@map("sale_items")
+}
+
+// Payment Management
+model Payment {
+  id            String        @id @default(uuid())
+  saleId        String?
+  amount        Decimal
+  method        PaymentMethod
+  status        PaymentStatus @default(PENDING)
+  reference     String?       // Transaction ID, check number, etc.
+  stripePaymentId String?
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  sale          Sale?         @relation(fields: [saleId], references: [id])
+
+  @@map("payments")
+}
+
+// Returns Management
+model Return {
+  id          String       @id @default(uuid())
+  saleId      String
+  reason      String
+  totalAmount Decimal
+  status      ReturnStatus @default(PENDING)
+  processedBy String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Relations
+  sale        Sale         @relation(fields: [saleId], references: [id])
+  items       ReturnItem[]
+
+  @@map("returns")
+}
+
+model ReturnItem {
+  id          String   @id @default(uuid())
+  returnId    String
+  productId   String?
+  variantId   String?
+  quantity    Decimal
+  unitPrice   Decimal
+  totalPrice  Decimal
+  createdAt   DateTime @default(now())
+
+  // Relations
+  return      Return   @relation(fields: [returnId], references: [id], onDelete: Cascade)
+
+  @@map("return_items")
+}
+
+// Loyalty System
+model LoyaltyTransaction {
+  id          String            @id @default(uuid())
+  customerId  String
+  points      Int
+  type        LoyaltyType
+  description String?
+  referenceId String?           // Sale ID or other reference
+  createdAt   DateTime          @default(now())
+
+  // Relations
+  customer    Customer          @relation(fields: [customerId], references: [id])
+
+  @@map("loyalty_transactions")
+}
+
+// Employee Management
+model Shift {
+  id        String    @id @default(uuid())
+  userId    String
+  startTime DateTime
+  endTime   DateTime?
+  breakTime Int       @default(0) // minutes
+  totalHours Decimal?
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relations
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@map("shifts")
+}
+
+// System Management
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?
+  action      String
+  tableName   String?
+  recordId    String?
+  oldValues   Json?
+  newValues   Json?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  // Relations
+  user        User?    @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+model SystemSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  type      String   @default("string")
+  category  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  MANAGER
+  CASHIER
+  CUSTOMER
+}
+
+enum SaleStatus {
+  DRAFT
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  PARTIALLY_PAID
+}
+
+enum PaymentMethod {
+  CASH
+  CREDIT_CARD
+  DEBIT_CARD
+  MOBILE_PAYMENT
+  GIFT_CARD
+  STORE_CREDIT
+  CHECK
+}
+
+enum MovementType {
+  IN
+  OUT
+  ADJUSTMENT
+  TRANSFER
+}
+
+enum ReturnStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+enum LoyaltyType {
+  EARNED
+  REDEEMED
+  EXPIRED
+  ADJUSTMENT
+}
