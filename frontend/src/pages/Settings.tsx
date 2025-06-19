@@ -519,8 +519,12 @@ const Settings: React.FC = () => {
   );
 
   const [systemInfo, setSystemInfo] = useState<any>(null);
-  const [showLogsModal, setShowLogsModal] = useState(false);
+  const [showLogsPage, setShowLogsPage] = useState(false);
+  const [showBackupPage, setShowBackupPage] = useState(false);
+  const [showExportPage, setShowExportPage] = useState(false);
   const [systemLogs, setSystemLogs] = useState('');
+  const [backupHistory, setBackupHistory] = useState<any[]>([]);
+  const [exportHistory, setExportHistory] = useState<any[]>([]);
 
   const handleBackupDatabase = async () => {
     try {
@@ -528,8 +532,8 @@ const Settings: React.FC = () => {
       const result = await apiService.backupDatabase();
       if (result.success) {
         toast.success('Database backup created successfully!');
-        // Auto-download the backup
-        await apiService.downloadFile(`/system/backup/${result.data.filename}`, result.data.filename);
+        // Add to backup history
+        setBackupHistory(prev => [result.data, ...prev]);
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to backup database');
@@ -544,8 +548,8 @@ const Settings: React.FC = () => {
       const result = await apiService.exportData(format);
       if (result.success) {
         toast.success(`Data exported to ${format.toUpperCase()} successfully!`);
-        // Auto-download the export
-        await apiService.downloadFile(`/system/export/${result.data.filename}`, result.data.filename);
+        // Add to export history
+        setExportHistory(prev => [result.data, ...prev]);
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to export data');
@@ -560,12 +564,21 @@ const Settings: React.FC = () => {
       const result = await apiService.getSystemLogs(1000);
       if (result.success) {
         setSystemLogs(result.data.logs);
-        setShowLogsModal(true);
+        setShowLogsPage(true);
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to load system logs');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownloadFile = async (url: string, filename: string) => {
+    try {
+      await apiService.downloadFile(url, filename);
+      toast.success(`Downloaded ${filename}`);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to download file');
     }
   };
 
@@ -611,50 +624,32 @@ const Settings: React.FC = () => {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <button 
-            onClick={handleBackupDatabase}
+            onClick={() => setShowBackupPage(true)}
             disabled={loading}
             className="p-4 border border-gray-300 rounded-lg hover:bg-gray-50 text-left disabled:opacity-50"
           >
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="font-medium text-gray-900">Backup Database</h4>
-                <p className="text-sm text-gray-500">Create a backup of your data</p>
+                <p className="text-sm text-gray-500">Create and manage database backups</p>
               </div>
               <ChevronRightIcon className="h-5 w-5 text-gray-400" />
             </div>
           </button>
           
-          <div className="relative">
-            <button 
-              onClick={() => handleExportData('csv')}
-              disabled={loading}
-              className="w-full p-4 border border-gray-300 rounded-lg hover:bg-gray-50 text-left disabled:opacity-50"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium text-gray-900">Export Data</h4>
-                  <p className="text-sm text-gray-500">Export your data to CSV/JSON</p>
-                </div>
-                <ChevronRightIcon className="h-5 w-5 text-gray-400" />
+          <button 
+            onClick={() => setShowExportPage(true)}
+            disabled={loading}
+            className="p-4 border border-gray-300 rounded-lg hover:bg-gray-50 text-left disabled:opacity-50"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium text-gray-900">Export Data</h4>
+                <p className="text-sm text-gray-500">Export your data to CSV/JSON</p>
               </div>
-            </button>
-            <div className="absolute top-2 right-8 flex space-x-1">
-              <button
-                onClick={() => handleExportData('csv')}
-                disabled={loading}
-                className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 disabled:opacity-50"
-              >
-                CSV
-              </button>
-              <button
-                onClick={() => handleExportData('json')}
-                disabled={loading}
-                className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 disabled:opacity-50"
-              >
-                JSON
-              </button>
+              <ChevronRightIcon className="h-5 w-5 text-gray-400" />
             </div>
-          </div>
+          </button>
           
           <button 
             onClick={handleViewLogs}
@@ -734,32 +729,147 @@ const Settings: React.FC = () => {
         )}
       </div>
 
-      {/* System Logs Modal */}
-      {showLogsModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-gray-900">System Logs</h3>
-                <button
-                  onClick={() => setShowLogsModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <XMarkIcon className="h-6 w-6" />
-                </button>
-              </div>
-              <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm max-h-96 overflow-y-auto">
-                <pre className="whitespace-pre-wrap">{systemLogs}</pre>
-              </div>
-              <div className="flex justify-end mt-4">
-                <button
-                  onClick={() => setShowLogsModal(false)}
-                  className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
-                >
-                  Close
-                </button>
-              </div>
+      {/* System Logs Page */}
+      {showLogsPage && (
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => setShowLogsPage(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <ChevronRightIcon className="h-5 w-5 rotate-180" />
+              </button>
+              <h2 className="text-xl font-semibold text-gray-900">System Logs</h2>
             </div>
+            <button
+              onClick={handleViewLogs}
+              disabled={loading}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+            >
+              {loading ? 'Refreshing...' : 'Refresh Logs'}
+            </button>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm h-96 overflow-y-auto">
+              <pre className="whitespace-pre-wrap">{systemLogs || 'No logs available'}</pre>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Backup Management Page */}
+      {showBackupPage && (
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => setShowBackupPage(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <ChevronRightIcon className="h-5 w-5 rotate-180" />
+              </button>
+              <h2 className="text-xl font-semibold text-gray-900">Database Backup</h2>
+            </div>
+            <button
+              onClick={handleBackupDatabase}
+              disabled={loading}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+            >
+              {loading ? 'Creating Backup...' : 'Create New Backup'}
+            </button>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Backup History</h3>
+            {backupHistory.length === 0 ? (
+              <p className="text-gray-500 text-center py-8">No backups created yet</p>
+            ) : (
+              <div className="space-y-3">
+                {backupHistory.map((backup, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                      <div className="font-medium text-gray-900">{backup.filename}</div>
+                      <div className="text-sm text-gray-500">
+                        Created: {new Date(backup.timestamp).toLocaleString()}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Size: {(backup.size / 1024 / 1024).toFixed(2)} MB
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleDownloadFile(`/system/backup/${backup.filename}`, backup.filename)}
+                      className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                      Download
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Export Management Page */}
+      {showExportPage && (
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => setShowExportPage(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <ChevronRightIcon className="h-5 w-5 rotate-180" />
+              </button>
+              <h2 className="text-xl font-semibold text-gray-900">Data Export</h2>
+            </div>
+            <div className="flex space-x-2">
+              <button
+                onClick={() => handleExportData('csv')}
+                disabled={loading}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              >
+                {loading ? 'Exporting...' : 'Export CSV'}
+              </button>
+              <button
+                onClick={() => handleExportData('json')}
+                disabled={loading}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+              >
+                {loading ? 'Exporting...' : 'Export JSON'}
+              </button>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Export History</h3>
+            {exportHistory.length === 0 ? (
+              <p className="text-gray-500 text-center py-8">No exports created yet</p>
+            ) : (
+              <div className="space-y-3">
+                {exportHistory.map((exportItem, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                      <div className="font-medium text-gray-900">{exportItem.filename}</div>
+                      <div className="text-sm text-gray-500">
+                        Created: {new Date(exportItem.timestamp).toLocaleString()}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Format: {exportItem.format?.toUpperCase()} | Size: {(exportItem.size / 1024 / 1024).toFixed(2)} MB
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleDownloadFile(`/system/export/${exportItem.filename}`, exportItem.filename)}
+                      className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                      Download
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -767,6 +877,11 @@ const Settings: React.FC = () => {
   );
 
   const renderTabContent = () => {
+    // Show dedicated pages when active
+    if (showLogsPage || showBackupPage || showExportPage) {
+      return null; // Content is rendered separately above
+    }
+
     switch (activeTab) {
       case 'store':
         return renderStoreSettings();
@@ -816,7 +931,153 @@ const Settings: React.FC = () => {
 
       {/* Tab Content */}
       <div className="mt-6">
-        {renderTabContent()}
+        {(showLogsPage || showBackupPage || showExportPage) ? (
+          <>
+            {showLogsPage && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={() => setShowLogsPage(false)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <ChevronRightIcon className="h-5 w-5 rotate-180" />
+                    </button>
+                    <h2 className="text-xl font-semibold text-gray-900">System Logs</h2>
+                  </div>
+                  <button
+                    onClick={handleViewLogs}
+                    disabled={loading}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {loading ? 'Refreshing...' : 'Refresh Logs'}
+                  </button>
+                </div>
+                
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                  <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm h-96 overflow-y-auto">
+                    <pre className="whitespace-pre-wrap">{systemLogs || 'No logs available'}</pre>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {showBackupPage && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={() => setShowBackupPage(false)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <ChevronRightIcon className="h-5 w-5 rotate-180" />
+                    </button>
+                    <h2 className="text-xl font-semibold text-gray-900">Database Backup</h2>
+                  </div>
+                  <button
+                    onClick={handleBackupDatabase}
+                    disabled={loading}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {loading ? 'Creating Backup...' : 'Create New Backup'}
+                  </button>
+                </div>
+                
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Backup History</h3>
+                  {backupHistory.length === 0 ? (
+                    <p className="text-gray-500 text-center py-8">No backups created yet</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {backupHistory.map((backup, index) => (
+                        <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                          <div>
+                            <div className="font-medium text-gray-900">{backup.filename}</div>
+                            <div className="text-sm text-gray-500">
+                              Created: {new Date(backup.timestamp).toLocaleString()}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              Size: {(backup.size / 1024 / 1024).toFixed(2)} MB
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleDownloadFile(`/system/backup/${backup.filename}`, backup.filename)}
+                            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                          >
+                            Download
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {showExportPage && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={() => setShowExportPage(false)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <ChevronRightIcon className="h-5 w-5 rotate-180" />
+                    </button>
+                    <h2 className="text-xl font-semibold text-gray-900">Data Export</h2>
+                  </div>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleExportData('csv')}
+                      disabled={loading}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {loading ? 'Exporting...' : 'Export CSV'}
+                    </button>
+                    <button
+                      onClick={() => handleExportData('json')}
+                      disabled={loading}
+                      className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                    >
+                      {loading ? 'Exporting...' : 'Export JSON'}
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Export History</h3>
+                  {exportHistory.length === 0 ? (
+                    <p className="text-gray-500 text-center py-8">No exports created yet</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {exportHistory.map((exportItem, index) => (
+                        <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                          <div>
+                            <div className="font-medium text-gray-900">{exportItem.filename}</div>
+                            <div className="text-sm text-gray-500">
+                              Created: {new Date(exportItem.timestamp).toLocaleString()}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              Format: {exportItem.format?.toUpperCase()} | Size: {(exportItem.size / 1024 / 1024).toFixed(2)} MB
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleDownloadFile(`/system/export/${exportItem.filename}`, exportItem.filename)}
+                            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                          >
+                            Download
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          renderTabContent()
+        )}
       </div>
     </div>
   );
