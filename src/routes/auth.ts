@@ -80,7 +80,7 @@ router.post('/register', async (req, res, next) => {
       data: { user }
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 
@@ -246,7 +246,7 @@ router.post('/refresh', async (req, res, next) => {
       data: { accessToken }
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 
