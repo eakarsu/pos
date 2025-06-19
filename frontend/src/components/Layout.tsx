@@ -7,7 +7,7 @@ import {
   UsersIcon, 
   ChartBarIcon,
   CogIcon,
-  LogoutIcon
+  ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline';
 
 const Layout: React.FC = () => {
@@ -65,7 +65,7 @@ const Layout: React.FC = () => {
             onClick={handleLogout}
             className="flex w-full items-center px-4 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-50 hover:text-gray-900 transition-colors"
           >
-            <LogoutIcon className="mr-3 h-5 w-5" />
+            <ArrowRightOnRectangleIcon className="mr-3 h-5 w-5" />
             Logout
           </button>
         </div>
