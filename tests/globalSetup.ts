@@ -6,6 +6,7 @@ export default async function globalSetup() {
   // Set test environment
   process.env.NODE_ENV = 'test';
   process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || 'file:./test.db';
+  process.env.TEST_DATABASE_URL = process.env.TEST_DATABASE_URL || 'file:./test.db';
   
   try {
     // Reset and setup test database
