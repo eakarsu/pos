@@ -14,6 +14,7 @@ import Inventory from './pages/Inventory';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import { AuthProvider, useAuth } from './utils/AuthContext';
+import { SettingsProvider } from './utils/SettingsContext';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -75,7 +76,9 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <AppRoutes />
+        <SettingsProvider>
+          <AppRoutes />
+        </SettingsProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

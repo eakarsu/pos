@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../utils/AuthContext';
+import { useSettings } from '../utils/SettingsContext';
+import { apiService } from '../utils/api';
 import toast from 'react-hot-toast';
 import {
   BuildingStorefrontIcon,
@@ -61,32 +63,17 @@ interface NotificationSettings {
 
 const Settings: React.FC = () => {
   const { user } = useAuth();
+  const { settings, updateStoreSettings, updatePOSSettings } = useSettings();
   const [activeTab, setActiveTab] = useState('store');
   const [loading, setLoading] = useState(false);
-  const [storeSettings, setStoreSettings] = useState<StoreSettings>({
-    name: 'My POS Store',
-    address: '123 Main Street',
-    city: 'Anytown',
-    state: 'CA',
-    zipCode: '12345',
-    phone: '(555) 123-4567',
-    email: 'store@example.com',
-    website: 'www.mystore.com',
-    taxRate: 8.25,
-    currency: 'USD',
-    timezone: 'America/Los_Angeles'
-  });
+  const [storeSettings, setStoreSettings] = useState<StoreSettings>(settings.store);
+  const [posSettings, setPosSettings] = useState<POSSettings>(settings.pos);
 
-  const [posSettings, setPosSettings] = useState<POSSettings>({
-    autoPrint: true,
-    emailReceipts: false,
-    printerName: 'Default Printer',
-    receiptFooter: 'Thank you for your business!',
-    barcodeScanner: true,
-    cashDrawer: true,
-    paymentMethods: ['Cash', 'Credit Card', 'Debit Card'],
-    lowStockThreshold: 10
-  });
+  // Update local state when settings context changes
+  useEffect(() => {
+    setStoreSettings(settings.store);
+    setPosSettings(settings.pos);
+  }, [settings]);
 
   const [userSettings, setUserSettings] = useState<UserSettings>({
     sessionTimeout: 30,
@@ -113,14 +100,76 @@ const Settings: React.FC = () => {
     { id: 'system', name: 'System', icon: CogIcon }
   ];
 
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      setLoading(true);
+      const [storeData, posData, userMgmtData, notificationData] = await Promise.all([
+        apiService.getSettings('store'),
+        apiService.getSettings('pos'),
+        apiService.getSettings('user'),
+        apiService.getSettings('notification')
+      ]);
+
+      if (storeData.success) {
+        setStoreSettings(storeData.data);
+      }
+      if (posData.success) {
+        setPosSettings(posData.data);
+      }
+      if (userMgmtData.success) {
+        setUserSettings(userMgmtData.data);
+      }
+      if (notificationData.success) {
+        setNotificationSettings(notificationData.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch settings:', error);
+      toast.error('Failed to load settings');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const saveSettings = async (settingsType: string) => {
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success(`${settingsType} settings saved successfully!`);
-    } catch (error) {
-      toast.error('Failed to save settings');
+      let data;
+      let endpoint;
+      
+      switch (settingsType.toLowerCase()) {
+        case 'store':
+          data = storeSettings;
+          endpoint = 'store';
+          break;
+        case 'pos':
+          data = posSettings;
+          endpoint = 'pos';
+          break;
+        case 'user':
+          data = userSettings;
+          endpoint = 'user';
+          break;
+        case 'notification':
+          data = notificationSettings;
+          endpoint = 'notification';
+          break;
+        default:
+          throw new Error('Invalid settings type');
+      }
+
+      const response = await apiService.updateSettings(endpoint, data);
+      
+      if (response.success) {
+        toast.success(`${settingsType} settings saved successfully!`);
+      } else {
+        throw new Error(response.message || 'Failed to save settings');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to save settings');
     } finally {
       setLoading(false);
     }

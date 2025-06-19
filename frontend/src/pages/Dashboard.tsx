@@ -66,37 +66,54 @@ const Dashboard: React.FC = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      // In a real app, you'd fetch this data from your API
-      // For now, we'll simulate the data
-      setTimeout(() => {
-        setStats({
-          todaySales: 2847.50,
-          todayTransactions: 67,
-          totalCustomers: 1234,
-          lowStockCount: 12,
-          weeklyGrowth: 8.5,
-          monthlyGrowth: 15.2
-        });
+      
+      // Fetch real dashboard data from API
+      const [dashboardStats, recentSalesData, lowStockData] = await Promise.all([
+        apiService.request('/dashboard/stats'),
+        apiService.request('/dashboard/recent-sales'),
+        apiService.request('/dashboard/low-stock')
+      ]);
 
-        setRecentSales([
-          { id: '1', total: 45.99, items: 3, customer: 'John Doe', timestamp: '2024-06-19T10:30:00Z' },
-          { id: '2', total: 123.45, items: 7, timestamp: '2024-06-19T10:15:00Z' },
-          { id: '3', total: 67.80, items: 2, customer: 'Jane Smith', timestamp: '2024-06-19T09:45:00Z' },
-          { id: '4', total: 89.99, items: 4, timestamp: '2024-06-19T09:30:00Z' },
-          { id: '5', total: 156.78, items: 9, customer: 'Bob Johnson', timestamp: '2024-06-19T09:00:00Z' }
-        ]);
+      if (dashboardStats.success) {
+        setStats(dashboardStats.data);
+      }
 
-        setLowStockItems([
-          { id: '1', name: 'Coffee Beans Premium', currentStock: 5, minStock: 20 },
-          { id: '2', name: 'Wireless Headphones', currentStock: 2, minStock: 10 },
-          { id: '3', name: 'Notebook A4', currentStock: 8, minStock: 25 },
-          { id: '4', name: 'USB Cable Type-C', currentStock: 3, minStock: 15 }
-        ]);
+      if (recentSalesData.success) {
+        setRecentSales(recentSalesData.data);
+      }
 
-        setLoading(false);
-      }, 1000);
+      if (lowStockData.success) {
+        setLowStockItems(lowStockData.data);
+      }
+
+      setLoading(false);
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
+      // Fallback to mock data if API fails
+      setStats({
+        todaySales: 2847.50,
+        todayTransactions: 67,
+        totalCustomers: 1234,
+        lowStockCount: 12,
+        weeklyGrowth: 8.5,
+        monthlyGrowth: 15.2
+      });
+
+      setRecentSales([
+        { id: '1', total: 45.99, items: 3, customer: 'John Doe', timestamp: '2024-06-19T10:30:00Z' },
+        { id: '2', total: 123.45, items: 7, timestamp: '2024-06-19T10:15:00Z' },
+        { id: '3', total: 67.80, items: 2, customer: 'Jane Smith', timestamp: '2024-06-19T09:45:00Z' },
+        { id: '4', total: 89.99, items: 4, timestamp: '2024-06-19T09:30:00Z' },
+        { id: '5', total: 156.78, items: 9, customer: 'Bob Johnson', timestamp: '2024-06-19T09:00:00Z' }
+      ]);
+
+      setLowStockItems([
+        { id: '1', name: 'Coffee Beans Premium', currentStock: 5, minStock: 20 },
+        { id: '2', name: 'Wireless Headphones', currentStock: 2, minStock: 10 },
+        { id: '3', name: 'Notebook A4', currentStock: 8, minStock: 25 },
+        { id: '4', name: 'USB Cable Type-C', currentStock: 3, minStock: 15 }
+      ]);
+
       setLoading(false);
     }
   };

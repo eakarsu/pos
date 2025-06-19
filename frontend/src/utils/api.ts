@@ -132,6 +132,22 @@ class ApiService {
   async getCustomerReport() {
     return this.request('/reports/customers');
   }
+
+  // Settings methods
+  async getSettings(category: string) {
+    return this.request(`/settings/${category}`);
+  }
+
+  async updateSettings(category: string, settingsData: any) {
+    return this.request(`/settings/${category}`, {
+      method: 'PUT',
+      body: JSON.stringify(settingsData)
+    });
+  }
+
+  async getAllSettings() {
+    return this.request('/settings');
+  }
 }
 
 export const apiService = new ApiService();
