@@ -5,7 +5,7 @@ export default async function globalSetup() {
   
   // Set test environment
   process.env.NODE_ENV = 'test';
-  process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/pos_system_test?schema=public';
+  process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || 'file:./test.db';
   
   try {
     // Reset and setup test database
