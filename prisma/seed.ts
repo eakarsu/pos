@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, PaymentMethod, SaleStatus, PaymentStatus } from '@prisma/client';
+import { PrismaClient, Role, PaymentMethod, SaleStatus, PaymentStatus } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -18,7 +18,7 @@ async function main() {
       firstName: 'System',
       lastName: 'Administrator',
       password: hashedPassword,
-      role: UserRole.ADMIN,
+      role: Role.ADMIN,
       employeeId: 'EMP001',
       phone: '+1-555-123-4567',
       hireDate: new Date(),
@@ -40,7 +40,7 @@ async function main() {
       firstName: 'John',
       lastName: 'Doe',
       password: cashierPassword,
-      role: UserRole.CASHIER,
+      role: Role.CASHIER,
       employeeId: 'EMP002',
       phone: '+1-555-123-4568',
       hireDate: new Date(),
@@ -56,7 +56,7 @@ async function main() {
       firstName: 'Jane',
       lastName: 'Smith',
       password: managerPassword,
-      role: UserRole.MANAGER,
+      role: Role.MANAGER,
       employeeId: 'EMP003',
       phone: '+1-555-123-4569',
       hireDate: new Date(),
