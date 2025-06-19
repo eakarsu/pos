@@ -47,19 +47,24 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
+// Public Route Component for landing page
+const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return <>{children}</>;
+};
+
 // App Routes Component (needs to be inside AuthProvider)
 const AppRoutes: React.FC = () => {
   return (
     <Router>
       <div className="App">
         <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/features" element={<Features />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/login" element={<Login />} />
+          {/* Public Routes - Always accessible */}
+          <Route path="/" element={<PublicRoute><LandingPage /></PublicRoute>} />
+          <Route path="/features" element={<PublicRoute><Features /></PublicRoute>} />
+          <Route path="/pricing" element={<PublicRoute><Pricing /></PublicRoute>} />
+          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           
-          {/* Protected App Routes */}
+          {/* Protected App Routes - Require authentication */}
           <Route path="/app" element={
             <ProtectedRoute>
               <Layout />
