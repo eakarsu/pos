@@ -13,7 +13,6 @@ router.use(authenticate);
 router.get('/', async (req, res, next) => {
   try {
     const categories = await prisma.category.findMany({
-      where: { isActive: true },
       orderBy: { name: 'asc' }
     });
 
@@ -32,9 +31,7 @@ router.get('/:id', async (req, res, next) => {
     const category = await prisma.category.findUnique({
       where: { id: req.params.id },
       include: {
-        products: {
-          where: { isActive: true }
-        }
+        products: true
       }
     });
 
