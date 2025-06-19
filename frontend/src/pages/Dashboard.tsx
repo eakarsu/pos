@@ -8,11 +8,11 @@ import {
   UserGroupIcon,
   ExclamationTriangleIcon,
   TrendingUpIcon,
-  TrendingDownIcon,
   ClockIcon,
   EyeIcon,
   PlusIcon,
-  ArrowRightIcon
+  ArrowRightIcon,
+  ChevronDownIcon
 } from '@heroicons/react/24/outline';
 
 interface DashboardStats {
@@ -143,7 +143,7 @@ const Dashboard: React.FC = () => {
               {growth >= 0 ? (
                 <TrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
               ) : (
-                <TrendingDownIcon className="h-4 w-4 text-red-500 mr-1" />
+                <ChevronDownIcon className="h-4 w-4 text-red-500 mr-1" />
               )}
               <span className={`text-sm font-medium ${growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {Math.abs(growth)}%
