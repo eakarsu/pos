@@ -70,8 +70,11 @@ const Customers: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setCustomers(data.data.customers);
-        setTotalPages(data.data.pagination.pages);
+        console.log('Customers API response:', data);
+        setCustomers(data.data.customers || []);
+        setTotalPages(data.data.pagination?.pages || 1);
+      } else {
+        console.error('Customers API error:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error fetching customers:', error);

@@ -79,8 +79,11 @@ const Products: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setProducts(data.data.products);
-        setTotalPages(data.data.pagination.pages);
+        console.log('Products API response:', data);
+        setProducts(data.data.products || []);
+        setTotalPages(data.data.pagination?.pages || 1);
+      } else {
+        console.error('Products API error:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -100,7 +103,10 @@ const Products: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
+        console.log('Categories API response:', data);
         setCategories(data.data.categories || []);
+      } else {
+        console.error('Categories API error:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
