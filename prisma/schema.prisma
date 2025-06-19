@@ -18,7 +18,7 @@ model User {
   firstName   String
   lastName    String
   password    String
-  role        Role @default(CASHIER)
+  role        String   @default("CASHIER") // ADMIN, MANAGER, CASHIER, CUSTOMER
   isActive    Boolean  @default(true)
   lastLogin   DateTime?
   createdAt   DateTime @default(now())
@@ -29,8 +29,8 @@ model User {
   phone       String?
   address     String?
   hireDate    DateTime?
-  salary      Decimal?
-  commission  Decimal? @default(0)
+  salary      Float?
+  commission  Float?   @default(0)
 
   // Relations
   sales       Sale[]
@@ -67,7 +67,7 @@ model Customer {
   state       String?
   zipCode     String?
   loyaltyPoints Int    @default(0)
-  totalSpent  Decimal  @default(0)
+  totalSpent  Float    @default(0)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -100,9 +100,9 @@ model Product {
   description String?
   sku         String   @unique
   barcode     String?  @unique
-  price       Decimal  @db.Decimal(10, 2)
-  cost        Decimal  @db.Decimal(10, 2) @default(0)
-  taxRate     Decimal  @db.Decimal(5, 4) @default(0)
+  price       Float
+  cost        Float    @default(0)
+  taxRate     Float    @default(0)
   isActive    Boolean  @default(true)
   isWeighed   Boolean  @default(false)
   minStock    Int      @default(0)
@@ -131,8 +131,8 @@ model ProductVariant {
   value     String   // e.g., "Large", "Red"
   sku       String   @unique
   barcode   String?  @unique
-  price     Decimal? @db.Decimal(10, 2)
-  cost      Decimal? @db.Decimal(10, 2)
+  price     Float?
+  cost      Float?
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -189,14 +189,14 @@ model InventoryItem {
 }
 
 model InventoryMovement {
-  id            String            @id @default(cuid())
+  id            String   @id @default(cuid())
   inventoryId   String
-  type          MovementType
+  type          String   // IN, OUT, ADJUSTMENT, TRANSFER
   quantity      Int
   reason        String?
-  referenceId   String?           // Sale ID, Purchase Order ID, etc.
+  referenceId   String?  // Sale ID, Purchase Order ID, etc.
   userId        String?
-  createdAt     DateTime          @default(now())
+  createdAt     DateTime @default(now())
 
   // Relations
   inventory     InventoryItem @relation(fields: [inventoryId], references: [id])
@@ -207,23 +207,23 @@ model InventoryMovement {
 
 // Sales Management
 model Sale {
-  id            String      @id @default(cuid())
-  saleNumber    String      @unique
+  id            String   @id @default(cuid())
+  saleNumber    String   @unique
   customerId    String?
   userId        String
-  subtotal      Decimal     @db.Decimal(10, 2)
-  taxAmount     Decimal     @db.Decimal(10, 2)
-  discountAmount Decimal    @db.Decimal(10, 2) @default(0)
-  totalAmount   Decimal     @db.Decimal(10, 2)
-  status        SaleStatus  @default(COMPLETED)
-  paymentStatus PaymentStatus @default(PAID)
+  subtotal      Float
+  taxAmount     Float
+  discountAmount Float   @default(0)
+  totalAmount   Float
+  status        String   @default("COMPLETED") // DRAFT, COMPLETED, CANCELLED, REFUNDED
+  paymentStatus String   @default("PAID") // PENDING, PAID, FAILED, REFUNDED, PARTIALLY_PAID
   notes         String?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // Relations
-  customer      Customer?   @relation(fields: [customerId], references: [id])
-  user          User        @relation(fields: [userId], references: [id])
+  customer      Customer? @relation(fields: [customerId], references: [id])
+  user          User      @relation(fields: [userId], references: [id])
   items         SaleItem[]
   payments      Payment[]
   returns       Return[]
@@ -236,11 +236,11 @@ model SaleItem {
   saleId      String
   productId   String?
   variantId   String?
-  quantity    Decimal  @db.Decimal(10, 3)
-  unitPrice   Decimal  @db.Decimal(10, 2)
-  discount    Decimal  @db.Decimal(10, 2) @default(0)
-  taxRate     Decimal  @db.Decimal(5, 4) @default(0)
-  totalPrice  Decimal  @db.Decimal(10, 2)
+  quantity    Float
+  unitPrice   Float
+  discount    Float    @default(0)
+  taxRate     Float    @default(0)
+  totalPrice  Float
   createdAt   DateTime @default(now())
 
   // Relations
@@ -253,33 +253,33 @@ model SaleItem {
 
 // Payment Management
 model Payment {
-  id            String        @id @default(cuid())
+  id            String   @id @default(cuid())
   saleId        String?
-  amount        Decimal       @db.Decimal(10, 2)
-  method        PaymentMethod
-  status        PaymentStatus @default(PENDING)
-  reference     String?       // Transaction ID, check number, etc.
+  amount        Float
+  method        String   // CASH, CREDIT_CARD, DEBIT_CARD, MOBILE_PAYMENT, GIFT_CARD, STORE_CREDIT, CHECK
+  status        String   @default("PENDING") // PENDING, PAID, FAILED, REFUNDED, PARTIALLY_PAID
+  reference     String?  // Transaction ID, check number, etc.
   stripePaymentId String?
   notes         String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // Relations
-  sale          Sale?         @relation(fields: [saleId], references: [id])
+  sale          Sale?    @relation(fields: [saleId], references: [id])
 
   @@map("payments")
 }
 
 // Returns Management
 model Return {
-  id          String       @id @default(cuid())
+  id          String   @id @default(cuid())
   saleId      String
   reason      String
-  totalAmount Decimal      @db.Decimal(10, 2)
-  status      ReturnStatus @default(PENDING)
+  totalAmount Float
+  status      String   @default("PENDING") // PENDING, APPROVED, REJECTED, COMPLETED
   processedBy String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relations
   sale        Sale         @relation(fields: [saleId], references: [id])
@@ -293,9 +293,9 @@ model ReturnItem {
   returnId    String
   productId   String?
   variantId   String?
-  quantity    Decimal  @db.Decimal(10, 3)
-  unitPrice   Decimal  @db.Decimal(10, 2)
-  totalPrice  Decimal  @db.Decimal(10, 2)
+  quantity    Float
+  unitPrice   Float
+  totalPrice  Float
   createdAt   DateTime @default(now())
 
   // Relations
@@ -306,16 +306,16 @@ model ReturnItem {
 
 // Loyalty System
 model LoyaltyTransaction {
-  id          String            @id @default(cuid())
+  id          String   @id @default(cuid())
   customerId  String
   points      Int
-  type        LoyaltyType
+  type        String   // EARNED, REDEEMED, EXPIRED, ADJUSTMENT
   description String?
-  referenceId String?           // Sale ID or other reference
-  createdAt   DateTime          @default(now())
+  referenceId String?  // Sale ID or other reference
+  createdAt   DateTime @default(now())
 
   // Relations
-  customer    Customer          @relation(fields: [customerId], references: [id])
+  customer    Customer @relation(fields: [customerId], references: [id])
 
   @@map("loyalty_transactions")
 }
@@ -327,7 +327,7 @@ model Shift {
   startTime DateTime
   endTime   DateTime?
   breakTime Int       @default(0) // minutes
-  totalHours Decimal?  @db.Decimal(5, 2)
+  totalHours Float?
   notes     String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -345,8 +345,8 @@ model AuditLog {
   action      String
   tableName   String?
   recordId    String?
-  oldValues   Json?
-  newValues   Json?
+  oldValues   String?  // JSON as string
+  newValues   String?  // JSON as string
   ipAddress   String?
   userAgent   String?
   createdAt   DateTime @default(now())
@@ -369,56 +369,3 @@ model SystemSetting {
   @@map("system_settings")
 }
 
-// Enums
-enum Role {
-  ADMIN
-  MANAGER
-  CASHIER
-  CUSTOMER
-}
-
-enum SaleStatus {
-  DRAFT
-  COMPLETED
-  CANCELLED
-  REFUNDED
-}
-
-enum PaymentStatus {
-  PENDING
-  PAID
-  FAILED
-  REFUNDED
-  PARTIALLY_PAID
-}
-
-enum PaymentMethod {
-  CASH
-  CREDIT_CARD
-  DEBIT_CARD
-  MOBILE_PAYMENT
-  GIFT_CARD
-  STORE_CREDIT
-  CHECK
-}
-
-enum MovementType {
-  IN
-  OUT
-  ADJUSTMENT
-  TRANSFER
-}
-
-enum ReturnStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  COMPLETED
-}
-
-enum LoyaltyType {
-  EARNED
-  REDEEMED
-  EXPIRED
-  ADJUSTMENT
-}

@@ -3,7 +3,6 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import { config } from '../config/environment';
-import { AppError } from '../middleware/errorHandler';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -44,7 +43,10 @@ router.post('/register', async (req, res, next) => {
     });
 
     if (existingUser) {
-      throw new AppError('User already exists', 400);
+      return res.status(400).json({
+        success: false,
+        message: 'User already exists'
+      });
     }
 
     // Hash password
@@ -210,7 +212,10 @@ router.post('/refresh', async (req, res, next) => {
     const { refreshToken } = req.body;
 
     if (!refreshToken) {
-      throw new AppError('Refresh token required', 400);
+      return res.status(400).json({
+        success: false,
+        message: 'Refresh token required'
+      });
     }
 
     // Verify refresh token
@@ -223,7 +228,10 @@ router.post('/refresh', async (req, res, next) => {
     });
 
     if (!tokenRecord || tokenRecord.expiresAt < new Date()) {
-      throw new AppError('Invalid refresh token', 401);
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid refresh token'
+      });
     }
 
     // Generate new access token

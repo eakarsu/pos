@@ -1,6 +1,5 @@
 import { Router, Request, Response } from 'express';
 import { authenticateToken } from '../middleware/auth';
-import { AppError } from '../middleware/errorHandler';
 
 const router = Router();
 
@@ -25,7 +24,11 @@ router.get('/stats', async (req: Request, res: Response) => {
       data: stats
     });
   } catch (error) {
-    throw new AppError('Failed to fetch dashboard stats', 500);
+    console.error('Dashboard stats error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch dashboard stats'
+    });
   }
 });
 
@@ -74,7 +77,11 @@ router.get('/recent-sales', async (req: Request, res: Response) => {
       data: recentSales
     });
   } catch (error) {
-    throw new AppError('Failed to fetch recent sales', 500);
+    console.error('Recent sales error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch recent sales'
+    });
   }
 });
 
@@ -120,7 +127,11 @@ router.get('/low-stock', async (req: Request, res: Response) => {
       data: lowStockItems
     });
   } catch (error) {
-    throw new AppError('Failed to fetch low stock items', 500);
+    console.error('Low stock error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch low stock items'
+    });
   }
 });
 

@@ -1,4 +1,4 @@
-import { PrismaClient, Role, PaymentMethod, SaleStatus, PaymentStatus } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -18,7 +18,7 @@ async function main() {
       firstName: 'System',
       lastName: 'Administrator',
       password: hashedPassword,
-      role: Role.ADMIN,
+      role: 'ADMIN',
       employeeId: 'EMP001',
       phone: '+1-555-123-4567',
       hireDate: new Date(),
@@ -40,7 +40,7 @@ async function main() {
       firstName: 'John',
       lastName: 'Doe',
       password: cashierPassword,
-      role: Role.CASHIER,
+      role: 'CASHIER',
       employeeId: 'EMP002',
       phone: '+1-555-123-4568',
       hireDate: new Date(),
@@ -56,7 +56,7 @@ async function main() {
       firstName: 'Jane',
       lastName: 'Smith',
       password: managerPassword,
-      role: Role.MANAGER,
+      role: 'MANAGER',
       employeeId: 'EMP003',
       phone: '+1-555-123-4569',
       hireDate: new Date(),
@@ -442,8 +442,8 @@ async function main() {
         taxAmount,
         discountAmount: 0,
         totalAmount,
-        status: SaleStatus.COMPLETED,
-        paymentStatus: PaymentStatus.PAID,
+        status: 'COMPLETED',
+        paymentStatus: 'PAID',
         createdAt: saleDate,
         updatedAt: saleDate,
         items: {
@@ -457,8 +457,8 @@ async function main() {
       data: {
         saleId: sale.id,
         amount: totalAmount,
-        method: Math.random() > 0.5 ? PaymentMethod.CASH : PaymentMethod.CREDIT_CARD,
-        status: PaymentStatus.PAID,
+        method: Math.random() > 0.5 ? 'CASH' : 'CREDIT_CARD',
+        status: 'PAID',
         createdAt: saleDate,
         updatedAt: saleDate,
       },
