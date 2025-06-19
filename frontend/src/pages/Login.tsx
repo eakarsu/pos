@@ -2,20 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { apiService } from '../utils/api';
+import { useAuth } from '../utils/AuthContext';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('admin@pos.com');
   const [password, setPassword] = useState('admin123');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login, isAuthenticated } = useAuth();
 
   useEffect(() => {
     // Redirect if already logged in
-    const token = localStorage.getItem('accessToken');
-    if (token) {
+    if (isAuthenticated) {
       navigate('/', { replace: true });
     }
-  }, [navigate]);
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,9 +26,7 @@ const Login: React.FC = () => {
       const data = await apiService.login(email, password);
 
       if (data.success) {
-        localStorage.setItem('accessToken', data.data.accessToken);
-        localStorage.setItem('refreshToken', data.data.refreshToken);
-        localStorage.setItem('user', JSON.stringify(data.data.user));
+        login(data.data.user, data.data.accessToken, data.data.refreshToken);
         toast.success('Login successful!');
         navigate('/');
       } else {
