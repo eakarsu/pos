@@ -126,7 +126,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/reports" element={<Navigate to="/app/reports" replace />} />
           <Route path="/settings" element={<Navigate to="/app/settings" replace />} />
           
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<div style={{padding: '20px', fontSize: '24px', background: 'red', color: 'white'}}>404 - Route not found: {window.location.pathname}</div>} />
         </Routes>
         <Toaster position="top-right" />
       </div>
