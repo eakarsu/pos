@@ -344,7 +344,7 @@ const POS: React.FC = () => {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      target.src = `https://via.placeholder.com/150x150/e5e7eb/6b7280?text=${encodeURIComponent(product.name)}`;
+                      target.src = `https://placehold.co/150x150/e5e7eb/6b7280/png?text=${encodeURIComponent(product.name)}`;
                     }}
                   />
                 </div>
