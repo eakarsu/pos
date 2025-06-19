@@ -1,37 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BuildingStorefrontIcon, CakeIcon, ScissorsIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
-const Solutions: React.FC = () => {
-  const solutions = [
-    {
-      icon: BuildingStorefrontIcon,
-      title: 'Retail',
-      description: 'Perfect for clothing stores, electronics, and general retail businesses.',
-      features: ['Inventory management', 'Barcode scanning', 'Customer loyalty programs', 'Multi-location support'],
-      link: '/solutions/retail'
-    },
-    {
-      icon: CakeIcon,
-      title: 'Restaurant',
-      description: 'Designed for restaurants, cafes, and food service businesses.',
-      features: ['Table management', 'Kitchen display', 'Order tracking', 'Split billing'],
-      link: '/solutions/restaurant'
-    },
-    {
-      icon: ScissorsIcon,
-      title: 'Salon & Spa',
-      description: 'Tailored for beauty salons, spas, and wellness centers.',
-      features: ['Appointment booking', 'Service packages', 'Staff scheduling', 'Client profiles'],
-      link: '/solutions/salon'
-    },
-    {
-      icon: BuildingOfficeIcon,
-      title: 'Multi-location',
-      description: 'Manage multiple stores or locations from one central dashboard.',
-      features: ['Centralized reporting', 'Inventory sync', 'Staff management', 'Performance analytics'],
-      link: '/solutions/multi-location'
-    }
+const SystemStatus: React.FC = () => {
+  const services = [
+    { name: 'POS Application', status: 'operational', uptime: '99.9%' },
+    { name: 'Payment Processing', status: 'operational', uptime: '99.8%' },
+    { name: 'API Services', status: 'operational', uptime: '99.9%' },
+    { name: 'Database', status: 'operational', uptime: '99.9%' },
+    { name: 'Cloud Storage', status: 'operational', uptime: '99.7%' },
+    { name: 'Email Notifications', status: 'maintenance', uptime: '99.5%' }
   ];
 
   return (
@@ -46,7 +24,7 @@ const Solutions: React.FC = () => {
             <nav className="hidden md:flex space-x-8">
               <Link to="/features" className="text-gray-600 hover:text-blue-600 transition-colors">Features</Link>
               <Link to="/pricing" className="text-gray-600 hover:text-blue-600 transition-colors">Pricing</Link>
-              <Link to="/solutions" className="text-blue-600 font-medium">Solutions</Link>
+              <Link to="/solutions" className="text-gray-600 hover:text-blue-600 transition-colors">Solutions</Link>
               <Link to="/resources" className="text-gray-600 hover:text-blue-600 transition-colors">Resources</Link>
               <Link to="/support" className="text-gray-600 hover:text-blue-600 transition-colors">Support</Link>
             </nav>
@@ -64,38 +42,48 @@ const Solutions: React.FC = () => {
       <section className="bg-gradient-to-br from-blue-50 to-indigo-100 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            Solutions for Every Business
+            System Status
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Discover how our POS system adapts to your specific industry needs and business requirements.
+            Real-time status of our services and infrastructure.
           </p>
         </div>
       </section>
 
-      {/* Solutions Grid */}
+      {/* Status Section */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {solutions.map((solution, index) => (
-              <div key={index} className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg mb-4">
-                  <solution.icon className="h-6 w-6 text-blue-600" />
+          <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-8">
+            <div className="flex items-center">
+              <CheckCircleIcon className="h-6 w-6 text-green-600 mr-3" />
+              <h2 className="text-xl font-semibold text-green-800">All Systems Operational</h2>
+            </div>
+            <p className="text-green-700 mt-2">Our services are running smoothly with no reported issues.</p>
+          </div>
+
+          <div className="space-y-4">
+            {services.map((service, index) => (
+              <div key={index} className="bg-white border border-gray-200 rounded-lg p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    {service.status === 'operational' ? (
+                      <CheckCircleIcon className="h-5 w-5 text-green-500 mr-3" />
+                    ) : (
+                      <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500 mr-3" />
+                    )}
+                    <h3 className="text-lg font-medium text-gray-900">{service.name}</h3>
+                  </div>
+                  <div className="flex items-center space-x-4">
+                    <span className="text-sm text-gray-500">Uptime: {service.uptime}</span>
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      service.status === 'operational' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {service.status === 'operational' ? 'Operational' : 'Maintenance'}
+                    </span>
+                  </div>
                 </div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-2">{solution.title}</h3>
-                <p className="text-gray-600 mb-4">{solution.description}</p>
-                <ul className="space-y-2 mb-6">
-                  {solution.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-center text-sm text-gray-600">
-                      <svg className="h-4 w-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <Link to={solution.link} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors inline-block">
-                  Learn More
-                </Link>
               </div>
             ))}
           </div>
@@ -159,4 +147,4 @@ const Solutions: React.FC = () => {
   );
 };
 
-export default Solutions;
+export default SystemStatus;

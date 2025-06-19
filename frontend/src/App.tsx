@@ -28,9 +28,12 @@ import MultiLocation from './pages/solutions/MultiLocation';
 
 // Company pages
 import About from './pages/company/About';
+import Contact from './pages/company/Contact';
+import Careers from './pages/company/Careers';
 
 // Support pages
 import HelpCenter from './pages/support/HelpCenter';
+import SystemStatus from './pages/support/SystemStatus';
 
 import { AuthProvider, useAuth } from './utils/AuthContext';
 import { SettingsProvider } from './utils/SettingsContext';
@@ -109,14 +112,14 @@ const AppRoutes: React.FC = () => {
           
           {/* Company pages */}
           <Route path="/about" element={<About />} />
-          <Route path="/careers" element={<div className="p-8"><h1 className="text-2xl">Careers - Coming Soon</h1></div>} />
+          <Route path="/careers" element={<Careers />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/press" element={<div className="p-8"><h1 className="text-2xl">Press - Coming Soon</h1></div>} />
           <Route path="/partners" element={<div className="p-8"><h1 className="text-2xl">Partners - Coming Soon</h1></div>} />
           
           {/* Support pages */}
           <Route path="/help" element={<HelpCenter />} />
-          <Route path="/contact" element={<div className="p-8"><h1 className="text-2xl">Contact Us - Coming Soon</h1></div>} />
-          <Route path="/status" element={<div className="p-8"><h1 className="text-2xl">System Status - Coming Soon</h1></div>} />
+          <Route path="/status" element={<SystemStatus />} />
           <Route path="/community" element={<div className="p-8"><h1 className="text-2xl">Community - Coming Soon</h1></div>} />
           
           {/* Other pages */}

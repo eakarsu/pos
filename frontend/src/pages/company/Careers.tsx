@@ -1,36 +1,40 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BuildingStorefrontIcon, CakeIcon, ScissorsIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, ClockIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline';
 
-const Solutions: React.FC = () => {
-  const solutions = [
+const Careers: React.FC = () => {
+  const jobs = [
     {
-      icon: BuildingStorefrontIcon,
-      title: 'Retail',
-      description: 'Perfect for clothing stores, electronics, and general retail businesses.',
-      features: ['Inventory management', 'Barcode scanning', 'Customer loyalty programs', 'Multi-location support'],
-      link: '/solutions/retail'
+      title: 'Senior Frontend Developer',
+      department: 'Engineering',
+      location: 'San Francisco, CA',
+      type: 'Full-time',
+      salary: '$120k - $160k',
+      description: 'Join our frontend team to build amazing user experiences for our POS system.'
     },
     {
-      icon: CakeIcon,
-      title: 'Restaurant',
-      description: 'Designed for restaurants, cafes, and food service businesses.',
-      features: ['Table management', 'Kitchen display', 'Order tracking', 'Split billing'],
-      link: '/solutions/restaurant'
+      title: 'Product Manager',
+      department: 'Product',
+      location: 'Remote',
+      type: 'Full-time',
+      salary: '$130k - $170k',
+      description: 'Lead product strategy and development for our core POS platform.'
     },
     {
-      icon: ScissorsIcon,
-      title: 'Salon & Spa',
-      description: 'Tailored for beauty salons, spas, and wellness centers.',
-      features: ['Appointment booking', 'Service packages', 'Staff scheduling', 'Client profiles'],
-      link: '/solutions/salon'
+      title: 'Customer Success Manager',
+      department: 'Customer Success',
+      location: 'New York, NY',
+      type: 'Full-time',
+      salary: '$80k - $110k',
+      description: 'Help our customers succeed and grow their businesses with our platform.'
     },
     {
-      icon: BuildingOfficeIcon,
-      title: 'Multi-location',
-      description: 'Manage multiple stores or locations from one central dashboard.',
-      features: ['Centralized reporting', 'Inventory sync', 'Staff management', 'Performance analytics'],
-      link: '/solutions/multi-location'
+      title: 'Sales Development Representative',
+      department: 'Sales',
+      location: 'Austin, TX',
+      type: 'Full-time',
+      salary: '$60k - $80k + Commission',
+      description: 'Generate new business opportunities and help grow our customer base.'
     }
   ];
 
@@ -46,7 +50,7 @@ const Solutions: React.FC = () => {
             <nav className="hidden md:flex space-x-8">
               <Link to="/features" className="text-gray-600 hover:text-blue-600 transition-colors">Features</Link>
               <Link to="/pricing" className="text-gray-600 hover:text-blue-600 transition-colors">Pricing</Link>
-              <Link to="/solutions" className="text-blue-600 font-medium">Solutions</Link>
+              <Link to="/solutions" className="text-gray-600 hover:text-blue-600 transition-colors">Solutions</Link>
               <Link to="/resources" className="text-gray-600 hover:text-blue-600 transition-colors">Resources</Link>
               <Link to="/support" className="text-gray-600 hover:text-blue-600 transition-colors">Support</Link>
             </nav>
@@ -64,40 +68,69 @@ const Solutions: React.FC = () => {
       <section className="bg-gradient-to-br from-blue-50 to-indigo-100 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            Solutions for Every Business
+            Join Our Team
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Discover how our POS system adapts to your specific industry needs and business requirements.
+            Help us build the future of point-of-sale technology and empower businesses worldwide.
           </p>
         </div>
       </section>
 
-      {/* Solutions Grid */}
+      {/* Jobs Section */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {solutions.map((solution, index) => (
-              <div key={index} className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg mb-4">
-                  <solution.icon className="h-6 w-6 text-blue-600" />
+          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Open Positions</h2>
+          <div className="space-y-6">
+            {jobs.map((job, index) => (
+              <div key={index} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">{job.title}</h3>
+                    <p className="text-gray-600 mb-4">{job.description}</p>
+                    <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                      <div className="flex items-center">
+                        <MapPinIcon className="h-4 w-4 mr-1" />
+                        {job.location}
+                      </div>
+                      <div className="flex items-center">
+                        <ClockIcon className="h-4 w-4 mr-1" />
+                        {job.type}
+                      </div>
+                      <div className="flex items-center">
+                        <CurrencyDollarIcon className="h-4 w-4 mr-1" />
+                        {job.salary}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 md:mt-0 md:ml-6">
+                    <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                      Apply Now
+                    </button>
+                  </div>
                 </div>
-                <h3 className="text-2xl font-semibold text-gray-900 mb-2">{solution.title}</h3>
-                <p className="text-gray-600 mb-4">{solution.description}</p>
-                <ul className="space-y-2 mb-6">
-                  {solution.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-center text-sm text-gray-600">
-                      <svg className="h-4 w-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                <Link to={solution.link} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors inline-block">
-                  Learn More
-                </Link>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-12 text-center">Why Work With Us?</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <h3 className="text-xl font-semibold mb-4">Great Benefits</h3>
+              <p className="text-gray-600">Comprehensive health insurance, 401k matching, and unlimited PTO.</p>
+            </div>
+            <div className="text-center">
+              <h3 className="text-xl font-semibold mb-4">Remote Friendly</h3>
+              <p className="text-gray-600">Work from anywhere with flexible hours and modern collaboration tools.</p>
+            </div>
+            <div className="text-center">
+              <h3 className="text-xl font-semibold mb-4">Growth Opportunities</h3>
+              <p className="text-gray-600">Learn new skills, take on challenges, and advance your career with us.</p>
+            </div>
           </div>
         </div>
       </section>
@@ -159,4 +192,4 @@ const Solutions: React.FC = () => {
   );
 };
 
-export default Solutions;
+export default Careers;
