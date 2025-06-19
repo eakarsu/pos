@@ -14,9 +14,9 @@ export const testPrisma = new PrismaClient({
 });
 
 export async function setupTestDatabase() {
-  // Ensure database schema exists by pushing the schema
+  // Test database connection
   try {
-    await testPrisma.$executeRaw`SELECT 1`;
+    await testPrisma.$queryRaw`SELECT 1 as test`;
   } catch (error) {
     console.log('Database connection failed, this is expected for first run');
   }
