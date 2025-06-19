@@ -4,7 +4,13 @@ module.exports = {
   roots: ['<rootDir>/tests'],
   testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
   transform: {
-    '^.+\\.ts$': 'ts-jest',
+    '^.+\\.ts$': ['ts-jest', {
+      tsconfig: {
+        noImplicitAny: false,
+        strictNullChecks: false,
+        strict: false
+      }
+    }],
   },
   collectCoverageFrom: [
     'src/**/*.ts',
@@ -17,14 +23,5 @@ module.exports = {
   globalSetup: '<rootDir>/tests/globalSetup.ts',
   globalTeardown: '<rootDir>/tests/globalTeardown.ts',
   testTimeout: 30000,
-  maxWorkers: 1,
-  globals: {
-    'ts-jest': {
-      tsconfig: {
-        noImplicitAny: false,
-        strictNullChecks: false,
-        strict: false
-      }
-    }
-  }
+  maxWorkers: 1
 };
