@@ -33,22 +33,22 @@ router.get('/', (req, res) => {
     endpoints: {
       health: '/health',
       docs: '/api-docs',
-      auth: `/api${API_PREFIX}/auth`,
-      products: `/api${API_PREFIX}/products`,
-      sales: `/api${API_PREFIX}/sales`,
-      customers: `/api${API_PREFIX}/customers`,
-      inventory: `/api${API_PREFIX}/inventory`,
-      reports: `/api${API_PREFIX}/reports`,
+      auth: '/api/v1/auth',
+      products: '/api/v1/products',
+      sales: '/api/v1/sales',
+      customers: '/api/v1/customers',
+      inventory: '/api/v1/inventory',
+      reports: '/api/v1/reports',
     },
   });
 });
 
 // Route modules
-router.use(`/api${API_PREFIX}/auth`, authRoutes);
-router.use(`/api${API_PREFIX}/products`, productRoutes);
-router.use(`/api${API_PREFIX}/sales`, salesRoutes);
-router.use(`/api${API_PREFIX}/customers`, customerRoutes);
-router.use(`/api${API_PREFIX}/inventory`, inventoryRoutes);
-router.use(`/api${API_PREFIX}/reports`, reportRoutes);
+router.use(`/api/v1/auth`, authRoutes);
+router.use(`/api/v1/products`, productRoutes);
+router.use(`/api/v1/sales`, salesRoutes);
+router.use(`/api/v1/customers`, customerRoutes);
+router.use(`/api/v1/inventory`, inventoryRoutes);
+router.use(`/api/v1/reports`, reportRoutes);
 
 export default router;
