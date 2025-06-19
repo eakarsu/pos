@@ -266,8 +266,10 @@ async function main() {
 
   const createdProducts = [];
   for (const product of products) {
-    const prod = await prisma.product.create({
-      data: product,
+    const prod = await prisma.product.upsert({
+      where: { sku: product.sku },
+      update: {},
+      create: product,
     });
     createdProducts.push(prod);
   }

@@ -10,6 +10,7 @@ import inventoryRoutes from './inventory';
 import reportRoutes from './reports';
 import categoryRoutes from './categories';
 import dashboardRoutes from './dashboard';
+import settingsRoutes from './settings';
 
 const router = Router();
 
@@ -43,6 +44,7 @@ router.get('/', (req, res) => {
       reports: '/api/v1/reports',
       categories: '/api/v1/categories',
       dashboard: '/api/v1/dashboard',
+      settings: '/api/v1/settings',
     },
   });
 });
@@ -56,5 +58,6 @@ router.use(`/api/v1/inventory`, inventoryRoutes);
 router.use(`/api/v1/reports`, reportRoutes);
 router.use(`/api/v1/categories`, categoryRoutes);
 router.use(`/api/v1/dashboard`, dashboardRoutes);
+router.use(`/api/v1/settings`, settingsRoutes);
 
 export default router;
