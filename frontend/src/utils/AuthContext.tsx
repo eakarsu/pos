@@ -35,18 +35,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     // Check for existing authentication on app start
     const checkAuth = () => {
+      console.log('AuthContext: Checking authentication...');
       try {
         const accessToken = localStorage.getItem('accessToken');
         const refreshToken = localStorage.getItem('refreshToken');
         const storedUser = localStorage.getItem('user');
 
+        console.log('AuthContext: Tokens found -', {
+          hasAccessToken: !!accessToken,
+          hasRefreshToken: !!refreshToken,
+          hasStoredUser: !!storedUser
+        });
+
         if (accessToken && refreshToken && storedUser) {
           try {
             const userData = JSON.parse(storedUser);
             setUser(userData);
-            console.log('Restored user session:', userData.email);
+            console.log('AuthContext: Restored user session:', userData.email);
           } catch (parseError) {
-            console.error('Error parsing stored user data:', parseError);
+            console.error('AuthContext: Error parsing stored user data:', parseError);
             // Clear invalid stored data
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
@@ -54,13 +61,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setUser(null);
           }
         } else {
-          console.log('No existing authentication found');
+          console.log('AuthContext: No existing authentication found');
           setUser(null);
         }
       } catch (error) {
-        console.error('Error checking authentication:', error);
+        console.error('AuthContext: Error checking authentication:', error);
         setUser(null);
       } finally {
+        console.log('AuthContext: Setting isLoading to false');
         setIsLoading(false);
       }
     };

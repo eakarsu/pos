@@ -54,15 +54,20 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 // App Routes Component (needs to be inside AuthProvider)
 const AppRoutes: React.FC = () => {
+  const { isAuthenticated, isLoading } = useAuth();
+  
+  // Debug logging
+  console.log('AppRoutes render - isAuthenticated:', isAuthenticated, 'isLoading:', isLoading);
+  
   return (
     <Router>
       <div className="App">
         <Routes>
           {/* Public Routes - Always accessible */}
-          <Route path="/" element={<PublicRoute><LandingPage /></PublicRoute>} />
-          <Route path="/features" element={<PublicRoute><Features /></PublicRoute>} />
-          <Route path="/pricing" element={<PublicRoute><Pricing /></PublicRoute>} />
-          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/features" element={<Features />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/login" element={<Login />} />
           
           {/* Protected App Routes - Require authentication */}
           <Route path="/app" element={
