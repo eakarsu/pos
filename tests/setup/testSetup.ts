@@ -35,6 +35,9 @@ export async function setupTestDatabase() {
     await testPrisma.category.deleteMany();
     await testPrisma.user.deleteMany();
     await testPrisma.systemSetting.deleteMany();
+    
+    // Wait a moment to ensure cleanup is complete
+    await new Promise(resolve => setTimeout(resolve, 100));
   } catch (error) {
     // If tables don't exist, that's fine - they'll be created by Prisma
     console.log('Note: Some tables may not exist yet, which is normal for first run');

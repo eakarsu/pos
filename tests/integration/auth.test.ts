@@ -9,6 +9,11 @@ describe('Authentication Integration Tests', () => {
     testData = await setupTestDatabase();
   });
 
+  beforeEach(async () => {
+    // Clean refresh tokens before each test to avoid unique constraint violations
+    await testPrisma.refreshToken.deleteMany();
+  });
+
   afterAll(async () => {
     await cleanupTestDatabase();
   });
