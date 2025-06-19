@@ -209,7 +209,7 @@ router.get('/alerts/low-stock', async (req, res, next) => {
 
     // Filter items where quantity is at or below reorder point
     const lowStockItems = allItems.filter(item => 
-      item.quantity <= (item.product.reorderPoint || 0)
+      item.product && item.quantity <= (item.product.reorderPoint || 0)
     );
 
     // Sort by quantity ascending
