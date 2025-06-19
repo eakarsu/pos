@@ -5,13 +5,9 @@ import { setupTestDatabase, cleanupTestDatabase, testPrisma } from '../setup/tes
 describe('Authentication Integration Tests', () => {
   let testData: any;
 
-  beforeAll(async () => {
-    testData = await setupTestDatabase();
-  });
-
   beforeEach(async () => {
-    // Clean refresh tokens before each test to avoid unique constraint violations
-    await testPrisma.refreshToken.deleteMany();
+    // Setup fresh test data for each test to avoid conflicts
+    testData = await setupTestDatabase();
   });
 
   afterAll(async () => {

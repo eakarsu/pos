@@ -6,10 +6,10 @@ describe('Sales Integration Tests', () => {
   let testData: any;
   let authToken: string;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     testData = await setupTestDatabase();
     
-    // Get auth token
+    // Get auth token for each test
     const loginResponse = await request(app)
       .post('/api/v1/auth/login')
       .send({
