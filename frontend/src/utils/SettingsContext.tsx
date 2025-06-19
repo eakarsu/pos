@@ -90,15 +90,59 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     try {
       setSettings(prev => ({ ...prev, isLoading: true }));
       
-      // For now, just use default settings since backend endpoints don't exist yet
-      // TODO: Implement backend settings endpoints
+      // Fetch all settings from the database
+      const response = await apiService.getAllSettings();
+      const dbSettings = response.data || [];
+      
+      // Convert flat settings array to structured settings object
+      const storeSettings = { ...defaultStoreSettings };
+      const posSettings = { ...defaultPOSSettings };
+      
+      dbSettings.forEach((setting: any) => {
+        const { key, value, type } = setting;
+        let parsedValue = value;
+        
+        // Parse value based on type
+        switch (type) {
+          case 'number':
+            parsedValue = parseFloat(value);
+            break;
+          case 'boolean':
+            parsedValue = value === 'true';
+            break;
+          case 'json':
+            try {
+              parsedValue = JSON.parse(value);
+            } catch {
+              parsedValue = value;
+            }
+            break;
+          default:
+            parsedValue = value;
+        }
+        
+        // Map settings to appropriate category
+        if (key.startsWith('store.')) {
+          const storeKey = key.replace('store.', '') as keyof StoreSettings;
+          if (storeKey in storeSettings) {
+            (storeSettings as any)[storeKey] = parsedValue;
+          }
+        } else if (key.startsWith('pos.')) {
+          const posKey = key.replace('pos.', '') as keyof POSSettings;
+          if (posKey in posSettings) {
+            (posSettings as any)[posKey] = parsedValue;
+          }
+        }
+      });
+      
       setSettings({
-        store: defaultStoreSettings,
-        pos: defaultPOSSettings,
+        store: storeSettings,
+        pos: posSettings,
         isLoading: false
       });
     } catch (error) {
       console.error('Failed to fetch settings:', error);
+      // Fall back to defaults if API fails
       setSettings({
         store: defaultStoreSettings,
         pos: defaultPOSSettings,
@@ -109,8 +153,17 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
 
   const updateStoreSettings = async (newSettings: StoreSettings) => {
     try {
-      // For now, just update local state since backend endpoints don't exist yet
-      // TODO: Implement backend settings endpoints
+      // Update each store setting in the database
+      const updatePromises = Object.entries(newSettings).map(([key, value]) => {
+        const settingKey = `store.${key}`;
+        const type = typeof value === 'number' ? 'number' : 
+                    typeof value === 'boolean' ? 'boolean' : 'string';
+        return apiService.updateSetting(settingKey, value.toString(), type);
+      });
+      
+      await Promise.all(updatePromises);
+      
+      // Update local state
       setSettings(prev => ({ ...prev, store: newSettings }));
       toast.success('Store settings updated successfully');
     } catch (error: any) {
@@ -121,8 +174,27 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
 
   const updatePOSSettings = async (newSettings: POSSettings) => {
     try {
-      // For now, just update local state since backend endpoints don't exist yet
-      // TODO: Implement backend settings endpoints
+      // Update each POS setting in the database
+      const updatePromises = Object.entries(newSettings).map(([key, value]) => {
+        const settingKey = `pos.${key}`;
+        let type = 'string';
+        let stringValue = value.toString();
+        
+        if (typeof value === 'number') {
+          type = 'number';
+        } else if (typeof value === 'boolean') {
+          type = 'boolean';
+        } else if (Array.isArray(value)) {
+          type = 'json';
+          stringValue = JSON.stringify(value);
+        }
+        
+        return apiService.updateSetting(settingKey, stringValue, type);
+      });
+      
+      await Promise.all(updatePromises);
+      
+      // Update local state
       setSettings(prev => ({ ...prev, pos: newSettings }));
       toast.success('POS settings updated successfully');
     } catch (error: any) {

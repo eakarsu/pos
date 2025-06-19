@@ -134,8 +134,9 @@ class ApiService {
   }
 
   // Settings methods
-  async getSettings(category: string) {
-    return this.request(`/settings/${category}`);
+  async getSettings(category?: string) {
+    const endpoint = category ? `/settings/${category}` : '/settings';
+    return this.request(endpoint);
   }
 
   async updateSettings(category: string, settingsData: any) {
@@ -147,6 +148,17 @@ class ApiService {
 
   async getAllSettings() {
     return this.request('/settings');
+  }
+
+  async getSetting(key: string) {
+    return this.request(`/settings/key/${key}`);
+  }
+
+  async updateSetting(key: string, value: any, type: string = 'string') {
+    return this.request(`/settings/key/${key}`, {
+      method: 'PUT',
+      body: JSON.stringify({ value, type })
+    });
   }
 }
 

@@ -54,6 +54,7 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/', routes);
+app.use('/api/v1/settings', require('./routes/settings').default);
 
 // Swagger documentation
 setupSwagger(app);

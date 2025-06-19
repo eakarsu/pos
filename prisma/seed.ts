@@ -498,6 +498,49 @@ async function main() {
 
   console.log('✅ Created system settings');
 
+  // Initialize default system settings for the application
+  console.log('🔧 Initializing application settings...');
+  
+  const appSettings = [
+    // Store settings
+    { key: 'store.name', value: 'POS System Store', category: 'store' },
+    { key: 'store.address', value: '123 Main Street', category: 'store' },
+    { key: 'store.city', value: 'Anytown', category: 'store' },
+    { key: 'store.state', value: 'CA', category: 'store' },
+    { key: 'store.zipCode', value: '12345', category: 'store' },
+    { key: 'store.phone', value: '(555) 123-4567', category: 'store' },
+    { key: 'store.email', value: 'store@example.com', category: 'store' },
+    { key: 'store.website', value: 'www.mystore.com', category: 'store' },
+    { key: 'store.taxRate', value: '8.25', type: 'number', category: 'store' },
+    { key: 'store.currency', value: 'USD', category: 'store' },
+    { key: 'store.timezone', value: 'America/Los_Angeles', category: 'store' },
+    
+    // POS settings
+    { key: 'pos.autoPrint', value: 'true', type: 'boolean', category: 'pos' },
+    { key: 'pos.emailReceipts', value: 'false', type: 'boolean', category: 'pos' },
+    { key: 'pos.printerName', value: 'Default Printer', category: 'pos' },
+    { key: 'pos.receiptFooter', value: 'Thank you for your business!', category: 'pos' },
+    { key: 'pos.barcodeScanner', value: 'true', type: 'boolean', category: 'pos' },
+    { key: 'pos.cashDrawer', value: 'true', type: 'boolean', category: 'pos' },
+    { key: 'pos.paymentMethods', value: '["Cash","Credit Card","Debit Card"]', type: 'json', category: 'pos' },
+    { key: 'pos.lowStockThreshold', value: '10', type: 'number', category: 'pos' }
+  ];
+
+  for (const setting of appSettings) {
+    await prisma.systemSetting.upsert({
+      where: { key: setting.key },
+      update: {},
+      create: {
+        key: setting.key,
+        value: setting.value,
+        type: setting.type || 'string',
+        category: setting.category
+      }
+    });
+  }
+
+  console.log('✅ Created application settings');
+
   console.log('🎉 Database seed completed successfully!');
   console.log('📊 Sample data created:');
   console.log(`   - ${createdProducts.length} products`);
