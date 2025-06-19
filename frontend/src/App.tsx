@@ -30,6 +30,9 @@ import MultiLocation from './pages/solutions/MultiLocation';
 import About from './pages/company/About';
 import Contact from './pages/company/Contact';
 import Careers from './pages/company/Careers';
+import Press from './pages/company/Press';
+import Partners from './pages/company/Partners';
+import Community from './pages/company/Community';
 
 // Support pages
 import HelpCenter from './pages/support/HelpCenter';
@@ -114,13 +117,13 @@ const AppRoutes: React.FC = () => {
           <Route path="/about" element={<About />} />
           <Route path="/careers" element={<Careers />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/press" element={<div className="p-8"><h1 className="text-2xl">Press - Coming Soon</h1></div>} />
-          <Route path="/partners" element={<div className="p-8"><h1 className="text-2xl">Partners - Coming Soon</h1></div>} />
+          <Route path="/press" element={<Press />} />
+          <Route path="/partners" element={<Partners />} />
+          <Route path="/community" element={<Community />} />
           
           {/* Support pages */}
           <Route path="/help" element={<HelpCenter />} />
           <Route path="/status" element={<SystemStatus />} />
-          <Route path="/community" element={<div className="p-8"><h1 className="text-2xl">Community - Coming Soon</h1></div>} />
           
           {/* Other pages */}
           <Route path="/demo" element={<div className="p-8"><h1 className="text-2xl">Demo - Coming Soon</h1></div>} />
