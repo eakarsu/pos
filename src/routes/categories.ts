@@ -73,8 +73,13 @@ router.post('/', authorize('ADMIN', 'MANAGER'), async (req, res, next) => {
 // Update category
 router.put('/:id', authorize('ADMIN', 'MANAGER'), async (req, res, next) => {
   try {
+    const { id } = req.params;
+    if (!id) {
+      throw new AppError('Category ID is required', 400);
+    }
+
     const category = await prisma.category.update({
-      where: { id: req.params.id },
+      where: { id },
       data: req.body
     });
 
@@ -91,8 +96,13 @@ router.put('/:id', authorize('ADMIN', 'MANAGER'), async (req, res, next) => {
 // Delete category
 router.delete('/:id', authorize('ADMIN', 'MANAGER'), async (req, res, next) => {
   try {
+    const { id } = req.params;
+    if (!id) {
+      throw new AppError('Category ID is required', 400);
+    }
+
     await prisma.category.update({
-      where: { id: req.params.id },
+      where: { id },
       data: { isActive: false }
     });
 
