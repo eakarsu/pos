@@ -7,12 +7,12 @@ import {
   ShoppingCartIcon,
   UserGroupIcon,
   ExclamationTriangleIcon,
-  TrendingUpIcon,
   ClockIcon,
   EyeIcon,
   PlusIcon,
   ArrowRightIcon,
-  ChevronDownIcon
+  ChevronDownIcon,
+  ChevronUpIcon
 } from '@heroicons/react/24/outline';
 
 interface DashboardStats {
@@ -141,7 +141,7 @@ const Dashboard: React.FC = () => {
           {growth !== undefined && (
             <div className="flex items-center mt-2">
               {growth >= 0 ? (
-                <TrendingUpIcon className="h-4 w-4 text-green-500 mr-1" />
+                <ChevronUpIcon className="h-4 w-4 text-green-500 mr-1" />
               ) : (
                 <ChevronDownIcon className="h-4 w-4 text-red-500 mr-1" />
               )}
@@ -361,7 +361,7 @@ const Dashboard: React.FC = () => {
             onClick={() => navigate('/reports')}
             className="flex flex-col items-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors"
           >
-            <TrendingUpIcon className="h-8 w-8 text-orange-600 mb-2" />
+            <ChevronUpIcon className="h-8 w-8 text-orange-600 mb-2" />
             <span className="text-sm font-medium text-orange-900">Reports</span>
           </button>
         </div>
