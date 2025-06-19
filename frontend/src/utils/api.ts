@@ -18,6 +18,22 @@ class ApiService {
 
     try {
       const response = await fetch(url, config);
+      
+      // Handle 401 Unauthorized - token might be expired
+      if (response.status === 401) {
+        // Clear invalid tokens
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        
+        // Redirect to login if not already on login page
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login';
+        }
+        
+        throw new Error('Authentication required. Please log in again.');
+      }
+
       const data = await response.json();
 
       if (!response.ok) {

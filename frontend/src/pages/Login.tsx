@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { apiService } from '../utils/api';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('admin@pos.com');
@@ -21,15 +22,7 @@ const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/v1/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
+      const data = await apiService.login(email, password);
 
       if (data.success) {
         localStorage.setItem('accessToken', data.data.accessToken);
@@ -40,8 +33,8 @@ const Login: React.FC = () => {
       } else {
         toast.error(data.message || 'Login failed');
       }
-    } catch (error) {
-      toast.error('Login failed. Please try again.');
+    } catch (error: any) {
+      toast.error(error.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
