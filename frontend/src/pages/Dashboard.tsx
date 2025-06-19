@@ -209,7 +209,7 @@ const Dashboard: React.FC = () => {
             </p>
           </div>
           <button
-            onClick={() => navigate('/pos')}
+            onClick={() => navigate('/app/pos')}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
           >
             <PlusIcon className="h-5 w-5" />
@@ -226,7 +226,7 @@ const Dashboard: React.FC = () => {
           icon={CurrencyDollarIcon}
           color="bg-green-500"
           growth={stats.weeklyGrowth}
-          onClick={() => navigate('/reports')}
+          onClick={() => navigate('/app/reports')}
         />
         <StatCard
           title="Transactions"
@@ -234,21 +234,21 @@ const Dashboard: React.FC = () => {
           icon={ShoppingCartIcon}
           color="bg-blue-500"
           growth={5.2}
-          onClick={() => navigate('/reports')}
+          onClick={() => navigate('/app/reports')}
         />
         <StatCard
           title="Total Customers"
           value={stats.totalCustomers.toLocaleString()}
           icon={UserGroupIcon}
           color="bg-purple-500"
-          onClick={() => navigate('/customers')}
+          onClick={() => navigate('/app/customers')}
         />
         <StatCard
           title="Low Stock Items"
           value={stats.lowStockCount}
           icon={ExclamationTriangleIcon}
           color="bg-red-500"
-          onClick={() => navigate('/inventory')}
+          onClick={() => navigate('/app/inventory')}
         />
       </div>
 
@@ -262,7 +262,7 @@ const Dashboard: React.FC = () => {
               Recent Sales
             </h2>
             <button
-              onClick={() => navigate('/reports')}
+              onClick={() => navigate('/app/reports')}
               className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center"
             >
               View All
@@ -313,7 +313,7 @@ const Dashboard: React.FC = () => {
               Low Stock Alert
             </h2>
             <button
-              onClick={() => navigate('/inventory')}
+              onClick={() => navigate('/app/inventory')}
               className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center"
             >
               Manage
@@ -354,28 +354,28 @@ const Dashboard: React.FC = () => {
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <button
-            onClick={() => navigate('/pos')}
+            onClick={() => navigate('/app/pos')}
             className="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
           >
             <PlusIcon className="h-8 w-8 text-blue-600 mb-2" />
             <span className="text-sm font-medium text-blue-900">New Sale</span>
           </button>
           <button
-            onClick={() => navigate('/products')}
+            onClick={() => navigate('/app/products')}
             className="flex flex-col items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
           >
             <PlusIcon className="h-8 w-8 text-green-600 mb-2" />
             <span className="text-sm font-medium text-green-900">Add Product</span>
           </button>
           <button
-            onClick={() => navigate('/customers')}
+            onClick={() => navigate('/app/customers')}
             className="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
           >
             <UserGroupIcon className="h-8 w-8 text-purple-600 mb-2" />
             <span className="text-sm font-medium text-purple-900">Customers</span>
           </button>
           <button
-            onClick={() => navigate('/reports')}
+            onClick={() => navigate('/app/reports')}
             className="flex flex-col items-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors"
           >
             <ChevronUpIcon className="h-8 w-8 text-orange-600 mb-2" />

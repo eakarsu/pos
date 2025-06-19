@@ -14,13 +14,13 @@ const Layout: React.FC = () => {
   const location = useLocation();
 
   const navigation = [
-    { name: 'Dashboard', href: '/', icon: HomeIcon },
-    { name: 'POS', href: '/pos', icon: ShoppingCartIcon },
-    { name: 'Products', href: '/products', icon: CubeIcon },
-    { name: 'Customers', href: '/customers', icon: UsersIcon },
-    { name: 'Inventory', href: '/inventory', icon: ChartBarIcon },
-    { name: 'Reports', href: '/reports', icon: ChartBarIcon },
-    { name: 'Settings', href: '/settings', icon: CogIcon },
+    { name: 'Dashboard', href: '/app/dashboard', icon: HomeIcon },
+    { name: 'POS', href: '/app/pos', icon: ShoppingCartIcon },
+    { name: 'Products', href: '/app/products', icon: CubeIcon },
+    { name: 'Customers', href: '/app/customers', icon: UsersIcon },
+    { name: 'Inventory', href: '/app/inventory', icon: ChartBarIcon },
+    { name: 'Reports', href: '/app/reports', icon: ChartBarIcon },
+    { name: 'Settings', href: '/app/settings', icon: CogIcon },
   ];
 
   const handleLogout = () => {

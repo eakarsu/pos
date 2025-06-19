@@ -13,6 +13,7 @@ import Customers from './pages/Customers';
 import Inventory from './pages/Inventory';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
+import LandingPage from './pages/LandingPage';
 import { AuthProvider, useAuth } from './utils/AuthContext';
 import { SettingsProvider } from './utils/SettingsContext';
 
@@ -50,13 +51,18 @@ const AppRoutes: React.FC = () => {
     <Router>
       <div className="App">
         <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/" element={
+          
+          {/* Protected App Routes */}
+          <Route path="/app" element={
             <ProtectedRoute>
               <Layout />
             </ProtectedRoute>
           }>
-            <Route index element={<Dashboard />} />
+            <Route index element={<Navigate to="/app/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
             <Route path="pos" element={<POS />} />
             <Route path="products" element={<Products />} />
             <Route path="customers" element={<Customers />} />
@@ -64,7 +70,17 @@ const AppRoutes: React.FC = () => {
             <Route path="reports" element={<Reports />} />
             <Route path="settings" element={<Settings />} />
           </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
+          
+          {/* Legacy redirects for backward compatibility */}
+          <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
+          <Route path="/pos" element={<Navigate to="/app/pos" replace />} />
+          <Route path="/products" element={<Navigate to="/app/products" replace />} />
+          <Route path="/customers" element={<Navigate to="/app/customers" replace />} />
+          <Route path="/inventory" element={<Navigate to="/app/inventory" replace />} />
+          <Route path="/reports" element={<Navigate to="/app/reports" replace />} />
+          <Route path="/settings" element={<Navigate to="/app/settings" replace />} />
+          
+          <Route path="*" element={<Navigate to="/app/dashboard" replace />} />
         </Routes>
         <Toaster position="top-right" />
       </div>
