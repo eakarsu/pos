@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PlusIcon, MinusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { useSettings } from '../utils/SettingsContext';
 
 interface CartItem {
   id: string;
@@ -10,6 +11,7 @@ interface CartItem {
 }
 
 const POS: React.FC = () => {
+  const { settings } = useSettings();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [barcode, setBarcode] = useState('');
   const [subtotal, setSubtotal] = useState(0);
@@ -19,11 +21,12 @@ const POS: React.FC = () => {
 
   useEffect(() => {
     const newSubtotal = cart.reduce((sum, item) => sum + item.total, 0);
-    const newTax = newSubtotal * 0.08; // 8% tax rate
+    const taxRate = settings.store.taxRate / 100; // Convert percentage to decimal
+    const newTax = newSubtotal * taxRate;
     setSubtotal(newSubtotal);
     setTax(newTax);
     setTotal(newSubtotal + newTax);
-  }, [cart]);
+  }, [cart, settings.store.taxRate]);
 
   const addToCart = (product: any) => {
     const existingItem = cart.find(item => item.id === product.id);
@@ -109,7 +112,7 @@ const POS: React.FC = () => {
           productId: item.id,
           quantity: item.quantity,
           unitPrice: item.price,
-          taxRate: 8 // 8% tax rate
+          taxRate: settings.store.taxRate
         })),
         payments: [{
           amount: total,
@@ -130,8 +133,15 @@ const POS: React.FC = () => {
         const data = await response.json();
         if (data.success) {
           console.log('Sale completed:', data.data.sale);
+          
+          // Auto-print receipt if enabled in settings
+          if (settings.pos.autoPrint) {
+            console.log('Auto-printing receipt...');
+            // TODO: Implement actual printing functionality
+          }
+          
           clearCart();
-          alert('Sale completed successfully!');
+          alert(`Sale completed successfully! ${settings.pos.receiptFooter}`);
         }
       } else {
         console.error('Checkout failed');

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PlusIcon, MagnifyingGlassIcon, ExclamationTriangleIcon, AdjustmentsHorizontalIcon, ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/outline';
+import { useSettings } from '../utils/SettingsContext';
 
 interface InventoryItem {
   id: string;
@@ -39,6 +40,7 @@ interface InventoryItem {
 }
 
 const Inventory: React.FC = () => {
+  const { settings } = useSettings();
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -127,8 +129,9 @@ const Inventory: React.FC = () => {
 
   const getStockStatus = (item: InventoryItem) => {
     const available = item.quantity - item.reservedQty;
-    const minStock = item.product?.minStock || 0;
-    const reorderPoint = item.product?.reorderPoint || 0;
+    const lowStockThreshold = settings.pos.lowStockThreshold;
+    const minStock = item.product?.minStock || lowStockThreshold;
+    const reorderPoint = item.product?.reorderPoint || Math.floor(lowStockThreshold / 2);
 
     if (available <= 0) return { status: 'out', color: 'text-red-600', bg: 'bg-red-100' };
     if (available <= reorderPoint) return { status: 'critical', color: 'text-red-600', bg: 'bg-red-100' };
