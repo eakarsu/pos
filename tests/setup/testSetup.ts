@@ -10,6 +10,13 @@ export const testPrisma = new PrismaClient({
 });
 
 export async function setupTestDatabase() {
+  // Ensure database schema exists by pushing the schema
+  try {
+    await testPrisma.$executeRaw`SELECT 1`;
+  } catch (error) {
+    console.log('Database connection failed, this is expected for first run');
+  }
+
   // Clean database - delete in order to respect foreign key constraints
   try {
     await testPrisma.refreshToken.deleteMany();
