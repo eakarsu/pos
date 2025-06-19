@@ -266,7 +266,7 @@ const Customers: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
-                      ${customer.totalSpent.toFixed(2)}
+                      ${Number(customer.totalSpent).toFixed(2)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -529,7 +529,7 @@ const Customers: React.FC = () => {
                 <div>
                   <h4 className="text-md font-medium text-gray-900 mb-3">Purchase Summary</h4>
                   <div className="space-y-2">
-                    <p><span className="font-medium">Total Spent:</span> ${selectedCustomer.totalSpent.toFixed(2)}</p>
+                    <p><span className="font-medium">Total Spent:</span> ${Number(selectedCustomer.totalSpent).toFixed(2)}</p>
                     <p><span className="font-medium">Loyalty Points:</span> {selectedCustomer.loyaltyPoints}</p>
                     <p><span className="font-medium">Total Orders:</span> {selectedCustomer.sales?.length || 0}</p>
                   </div>
@@ -564,7 +564,7 @@ const Customers: React.FC = () => {
                               {new Date(sale.createdAt).toLocaleDateString()}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              ${sale.totalAmount.toFixed(2)}
+                              ${Number(sale.totalAmount).toFixed(2)}
                             </td>
                           </tr>
                         ))}

@@ -148,8 +148,8 @@ const Products: React.FC = () => {
       description: '',
       sku: product.sku,
       barcode: product.barcode || '',
-      price: product.price.toString(),
-      cost: product.cost.toString(),
+      price: Number(product.price).toString(),
+      cost: Number(product.cost).toString(),
       categoryId: product.category?.id || '',
       supplierId: product.supplier?.id || '',
       minStock: '0',
@@ -311,8 +311,8 @@ const Products: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">${product.price.toFixed(2)}</div>
-                    <div className="text-sm text-gray-500">Cost: ${product.cost.toFixed(2)}</div>
+                    <div className="text-sm text-gray-900">${Number(product.price).toFixed(2)}</div>
+                    <div className="text-sm text-gray-500">Cost: ${Number(product.cost).toFixed(2)}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`text-sm font-medium ${
