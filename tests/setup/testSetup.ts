@@ -1,10 +1,13 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
+// Set the DATABASE_URL to test database for the entire application during tests
+process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/pos_system_test?schema=public';
+
 export const testPrisma = new PrismaClient({
   datasources: {
     db: {
-      url: process.env.TEST_DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/pos_system_test?schema=public'
+      url: process.env.DATABASE_URL
     }
   }
 });
