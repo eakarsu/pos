@@ -7,7 +7,7 @@ export const config = {
   // Server Configuration
   port: parseInt(process.env.PORT || '3000', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
-  apiVersion: process.env.API_VERSION || 'v1',
+  apiVersion: process.env.API_VERSION || '1',
 
   // Database Configuration
   databaseUrl: process.env.DATABASE_URL || 'postgresql://pos_user:pos_password@localhost:5432/pos_system?schema=public',
@@ -15,10 +15,14 @@ export const config = {
   // Redis Configuration
   redisUrl: process.env.REDIS_URL || 'redis://localhost:6379',
 
-  // JWT Configuration
+  // JWT Configuration - Direct access for compatibility
+  jwtSecret: process.env.JWT_SECRET || 'pos-system-super-secret-jwt-key-2024',
+  jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || 'pos-system-super-secret-refresh-key-2024',
+  
+  // JWT Configuration - Nested object for advanced usage
   jwt: {
-    secret: process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production',
-    refreshSecret: process.env.JWT_REFRESH_SECRET || 'your-super-secret-refresh-key-change-this-in-production',
+    secret: process.env.JWT_SECRET || 'pos-system-super-secret-jwt-key-2024',
+    refreshSecret: process.env.JWT_REFRESH_SECRET || 'pos-system-super-secret-refresh-key-2024',
     expiresIn: process.env.JWT_EXPIRES_IN || '15m',
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   },
