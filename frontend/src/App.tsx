@@ -64,72 +64,62 @@ const NavigationTracker: React.FC = () => {
   return null;
 };
 
-// Minimal App Routes Component for debugging
+// App Routes Component (needs to be inside AuthProvider)
 const AppRoutes: React.FC = () => {
-  console.log('AppRoutes render - Current URL:', window.location.href);
-  console.log('AppRoutes render - Current pathname:', window.location.pathname);
+  const { isAuthenticated, isLoading } = useAuth();
   
-  // Add global navigation listener
-  useEffect(() => {
-    console.log('AppRoutes: useEffect running, current path:', window.location.pathname);
-    
-    const originalPushState = history.pushState;
-    const originalReplaceState = history.replaceState;
-    
-    history.pushState = function(...args) {
-      console.log('NAVIGATION: history.pushState called with:', args);
-      console.trace('NAVIGATION: pushState stack trace');
-      return originalPushState.apply(history, args);
-    };
-    
-    history.replaceState = function(...args) {
-      console.log('NAVIGATION: history.replaceState called with:', args);
-      console.trace('NAVIGATION: replaceState stack trace');
-      return originalReplaceState.apply(history, args);
-    };
-    
-    // Check if we're on root and getting redirected
-    if (window.location.pathname === '/') {
-      console.log('AppRoutes: We are on root path, should show landing page');
-    } else {
-      console.log('AppRoutes: We are NOT on root path, current path:', window.location.pathname);
-    }
-    
-    return () => {
-      history.pushState = originalPushState;
-      history.replaceState = originalReplaceState;
-    };
-  }, []);
+  // Debug logging
+  console.log('AppRoutes render - isAuthenticated:', isAuthenticated, 'isLoading:', isLoading);
+  console.log('Current URL:', window.location.href);
+  console.log('Current pathname:', window.location.pathname);
   
   return (
     <Router>
-      <NavigationTracker />
       <div className="App">
-        <div style={{padding: '20px', background: 'lime', margin: '10px', fontSize: '18px'}}>
-          DEBUGGING: AppRoutes is rendering. Current path: {window.location.pathname}
-        </div>
         <Routes>
-          <Route path="/" element={
-            <div style={{padding: '40px', background: 'lightblue', fontSize: '24px'}}>
-              <h1>ROOT ROUTE IS WORKING!</h1>
-              <p>Current URL: {window.location.href}</p>
-              <p>Current pathname: {window.location.pathname}</p>
-              <p>Time: {new Date().toISOString()}</p>
+          {/* Public Routes - Always accessible */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/features" element={<Features />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/login" element={isLoading ? (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="mt-4 text-gray-600">Loading...</p>
+              </div>
             </div>
-          } />
-          <Route path="/login" element={
-            <div style={{padding: '40px', background: 'lightcoral', fontSize: '24px'}}>
-              <h1>LOGIN ROUTE</h1>
-              <p>You are on the login page</p>
-            </div>
-          } />
-          <Route path="*" element={
-            <div style={{padding: '40px', background: 'yellow', fontSize: '24px'}}>
-              <h1>CATCH-ALL ROUTE</h1>
-              <p>Path not found: {window.location.pathname}</p>
-            </div>
-          } />
+          ) : <Login />} />
+          
+          {/* Protected App Routes - Require authentication and settings */}
+          <Route path="/app" element={
+            <ProtectedRoute>
+              <SettingsProvider>
+                <Layout />
+              </SettingsProvider>
+            </ProtectedRoute>
+          }>
+            <Route index element={<Navigate to="/app/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="pos" element={<POS />} />
+            <Route path="products" element={<Products />} />
+            <Route path="customers" element={<Customers />} />
+            <Route path="inventory" element={<Inventory />} />
+            <Route path="reports" element={<Reports />} />
+            <Route path="settings" element={<Settings />} />
+          </Route>
+          
+          {/* Legacy redirects for backward compatibility */}
+          <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
+          <Route path="/pos" element={<Navigate to="/app/pos" replace />} />
+          <Route path="/products" element={<Navigate to="/app/products" replace />} />
+          <Route path="/customers" element={<Navigate to="/app/customers" replace />} />
+          <Route path="/inventory" element={<Navigate to="/app/inventory" replace />} />
+          <Route path="/reports" element={<Navigate to="/app/reports" replace />} />
+          <Route path="/settings" element={<Navigate to="/app/settings" replace />} />
+          
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <Toaster position="top-right" />
       </div>
     </Router>
   );
@@ -139,9 +129,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <SettingsProvider>
-          <AppRoutes />
-        </SettingsProvider>
+        <AppRoutes />
       </AuthProvider>
     </QueryClientProvider>
   );
