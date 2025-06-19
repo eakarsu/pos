@@ -9,14 +9,18 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('admin123');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, isLoading } = useAuth();
+
+  console.log('Login component - isAuthenticated:', isAuthenticated, 'isLoading:', isLoading);
 
   useEffect(() => {
-    // Redirect if already logged in
-    if (isAuthenticated) {
+    console.log('Login useEffect - isAuthenticated:', isAuthenticated, 'isLoading:', isLoading);
+    // Only redirect if not loading and actually authenticated
+    if (!isLoading && isAuthenticated) {
+      console.log('Login: Redirecting authenticated user to dashboard');
       navigate('/app/dashboard', { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,6 +42,18 @@ const Login: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Show loading while auth state is being determined
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

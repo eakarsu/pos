@@ -12,6 +12,8 @@ import {
 } from '@heroicons/react/24/outline';
 
 const LandingPage: React.FC = () => {
+  console.log('LandingPage: Component is rendering');
+  
   const features = [
     {
       icon: CreditCardIcon,
