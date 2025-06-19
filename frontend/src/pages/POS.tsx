@@ -15,6 +15,7 @@ const POS: React.FC = () => {
   const [subtotal, setSubtotal] = useState(0);
   const [tax, setTax] = useState(0);
   const [total, setTotal] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState('All');
 
   useEffect(() => {
     const newSubtotal = cart.reduce((sum, item) => sum + item.total, 0);
@@ -168,23 +169,188 @@ const POS: React.FC = () => {
             </div>
           </form>
 
+          {/* Category Filter */}
+          <div className="mb-4">
+            <div className="flex flex-wrap gap-2">
+              {['All', 'Food', 'Beverages', 'Snacks'].map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                    selectedCategory === category
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Quick Add Buttons - Sample Products */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {[
-              { id: '1', name: 'Coffee', price: 3.50 },
-              { id: '2', name: 'Sandwich', price: 8.99 },
-              { id: '3', name: 'Soda', price: 2.25 },
-              { id: '4', name: 'Chips', price: 1.99 },
-              { id: '5', name: 'Water', price: 1.50 },
-              { id: '6', name: 'Candy', price: 0.99 },
-            ].map((product) => (
+              { 
+                id: '1', 
+                name: 'Coffee', 
+                price: 3.50, 
+                image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=150&h=150&fit=crop&crop=center',
+                category: 'Beverages'
+              },
+              { 
+                id: '2', 
+                name: 'Sandwich', 
+                price: 8.99, 
+                image: 'https://images.unsplash.com/photo-1553909489-cd47e0ef937f?w=150&h=150&fit=crop&crop=center',
+                category: 'Food'
+              },
+              { 
+                id: '3', 
+                name: 'Soda', 
+                price: 2.25, 
+                image: 'https://images.unsplash.com/photo-1581636625402-29b2a704ef13?w=150&h=150&fit=crop&crop=center',
+                category: 'Beverages'
+              },
+              { 
+                id: '4', 
+                name: 'Chips', 
+                price: 1.99, 
+                image: 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=150&h=150&fit=crop&crop=center',
+                category: 'Snacks'
+              },
+              { 
+                id: '5', 
+                name: 'Water', 
+                price: 1.50, 
+                image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=150&h=150&fit=crop&crop=center',
+                category: 'Beverages'
+              },
+              { 
+                id: '6', 
+                name: 'Candy', 
+                price: 0.99, 
+                image: 'https://images.unsplash.com/photo-1575224300306-1b8da36134ec?w=150&h=150&fit=crop&crop=center',
+                category: 'Snacks'
+              },
+              { 
+                id: '7', 
+                name: 'Pizza Slice', 
+                price: 4.50, 
+                image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=150&h=150&fit=crop&crop=center',
+                category: 'Food'
+              },
+              { 
+                id: '8', 
+                name: 'Energy Drink', 
+                price: 3.25, 
+                image: 'https://images.unsplash.com/photo-1622543925917-763c34d1a86e?w=150&h=150&fit=crop&crop=center',
+                category: 'Beverages'
+              },
+              { 
+                id: '9', 
+                name: 'Donut', 
+                price: 2.50, 
+                image: 'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=150&h=150&fit=crop&crop=center',
+                category: 'Food'
+              },
+              { 
+                id: '10', 
+                name: 'Ice Cream', 
+                price: 4.99, 
+                image: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=150&h=150&fit=crop&crop=center',
+                category: 'Food'
+              },
+              { 
+                id: '11', 
+                name: 'Cookies', 
+                price: 3.75, 
+                image: 'https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=150&h=150&fit=crop&crop=center',
+                category: 'Snacks'
+              },
+              { 
+                id: '12', 
+                name: 'Juice', 
+                price: 2.99, 
+                image: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=150&h=150&fit=crop&crop=center',
+                category: 'Beverages'
+              },
+              { 
+                id: '13', 
+                name: 'Burger', 
+                price: 12.99, 
+                image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=150&h=150&fit=crop&crop=center',
+                category: 'Food'
+              },
+              { 
+                id: '14', 
+                name: 'Salad', 
+                price: 7.50, 
+                image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=150&h=150&fit=crop&crop=center',
+                category: 'Food'
+              },
+              { 
+                id: '15', 
+                name: 'Muffin', 
+                price: 3.25, 
+                image: 'https://images.unsplash.com/photo-1607958996333-41aef7caefaa?w=150&h=150&fit=crop&crop=center',
+                category: 'Food'
+              },
+              { 
+                id: '16', 
+                name: 'Nuts', 
+                price: 4.25, 
+                image: 'https://images.unsplash.com/photo-1508747703725-719777637510?w=150&h=150&fit=crop&crop=center',
+                category: 'Snacks'
+              },
+              { 
+                id: '17', 
+                name: 'Yogurt', 
+                price: 2.75, 
+                image: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=150&h=150&fit=crop&crop=center',
+                category: 'Food'
+              },
+              { 
+                id: '18', 
+                name: 'Tea', 
+                price: 2.50, 
+                image: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=150&h=150&fit=crop&crop=center',
+                category: 'Beverages'
+              },
+              { 
+                id: '19', 
+                name: 'Croissant', 
+                price: 3.99, 
+                image: 'https://images.unsplash.com/photo-1555507036-ab794f4afe5a?w=150&h=150&fit=crop&crop=center',
+                category: 'Food'
+              },
+              { 
+                id: '20', 
+                name: 'Smoothie', 
+                price: 5.50, 
+                image: 'https://images.unsplash.com/photo-1505252585461-04db1eb84625?w=150&h=150&fit=crop&crop=center',
+                category: 'Beverages'
+              },
+            ].filter(product => selectedCategory === 'All' || product.category === selectedCategory).map((product) => (
               <button
                 key={product.id}
                 onClick={() => addToCart(product)}
-                className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors text-left"
+                className="p-3 bg-white rounded-lg hover:bg-gray-50 transition-colors text-left shadow-sm border border-gray-200 group"
               >
-                <div className="font-medium text-gray-900">{product.name}</div>
-                <div className="text-sm text-gray-600">${product.price.toFixed(2)}</div>
+                <div className="aspect-square mb-2 overflow-hidden rounded-md">
+                  <img 
+                    src={product.image} 
+                    alt={product.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = `https://via.placeholder.com/150x150/e5e7eb/6b7280?text=${encodeURIComponent(product.name)}`;
+                    }}
+                  />
+                </div>
+                <div className="font-medium text-gray-900 text-sm truncate">{product.name}</div>
+                <div className="text-xs text-gray-500 mb-1">{product.category}</div>
+                <div className="text-sm font-semibold text-blue-600">${product.price.toFixed(2)}</div>
               </button>
             ))}
           </div>
