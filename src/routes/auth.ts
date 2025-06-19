@@ -74,7 +74,7 @@ router.post('/register', async (req, res, next) => {
       }
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: 'User registered successfully',
       data: { user }
@@ -175,7 +175,7 @@ router.post('/login', async (req, res, next) => {
 
     console.log('Login successful for user:', user.email);
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Login successful',
       data: {
@@ -198,7 +198,7 @@ router.post('/login', async (req, res, next) => {
       name: error.name
     });
     
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Internal server error during login',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -241,7 +241,7 @@ router.post('/refresh', async (req, res, next) => {
       { expiresIn: '15m' }
     );
 
-    res.json({
+    return res.json({
       success: true,
       data: { accessToken }
     });
