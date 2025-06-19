@@ -8,6 +8,11 @@ import { AppError } from '../middleware/errorHandler';
 const router = Router();
 const prisma = new PrismaClient();
 
+// Ensure Prisma connects properly
+prisma.$connect().catch((error) => {
+  console.error('Failed to connect to database:', error);
+});
+
 // Register
 router.post('/register', async (req, res, next) => {
   try {
@@ -64,19 +69,33 @@ router.post('/login', async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and password are required'
+      });
+    }
+
     // Find user
     const user = await prisma.user.findUnique({
       where: { email }
     });
 
     if (!user || !user.isActive) {
-      throw new AppError('Invalid credentials', 401);
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
     }
 
     // Check password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
-      throw new AppError('Invalid credentials', 401);
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
     }
 
     // Generate tokens
@@ -124,7 +143,11 @@ router.post('/login', async (req, res, next) => {
       }
     });
   } catch (error) {
-    next(error);
+    console.error('Login error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error during login'
+    });
   }
 });
 
