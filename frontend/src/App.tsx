@@ -69,8 +69,32 @@ const AppRoutes: React.FC = () => {
   console.log('AppRoutes render - Current URL:', window.location.href);
   console.log('AppRoutes render - Current pathname:', window.location.pathname);
   
+  // Add global navigation listener
+  useEffect(() => {
+    const originalPushState = history.pushState;
+    const originalReplaceState = history.replaceState;
+    
+    history.pushState = function(...args) {
+      console.log('NAVIGATION: history.pushState called with:', args);
+      console.trace('NAVIGATION: pushState stack trace');
+      return originalPushState.apply(history, args);
+    };
+    
+    history.replaceState = function(...args) {
+      console.log('NAVIGATION: history.replaceState called with:', args);
+      console.trace('NAVIGATION: replaceState stack trace');
+      return originalReplaceState.apply(history, args);
+    };
+    
+    return () => {
+      history.pushState = originalPushState;
+      history.replaceState = originalReplaceState;
+    };
+  }, []);
+  
   return (
     <Router>
+      <NavigationTracker />
       <div className="App">
         <div style={{padding: '20px', background: 'lime', margin: '10px', fontSize: '18px'}}>
           DEBUGGING: AppRoutes is rendering. Current path: {window.location.pathname}
