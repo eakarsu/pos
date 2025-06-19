@@ -15,13 +15,19 @@ beforeAll(async () => {
   process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || 'file:./test.db';
   
   // Initialize Prisma client for tests
-  (global as any).__PRISMA__ = new PrismaClient({
+  const prisma = new PrismaClient({
     datasources: {
       db: {
         url: process.env.DATABASE_URL
       }
     }
   });
+  
+  // Connect to database
+  await prisma.$connect();
+  
+  // Store in global
+  (global as any).__PRISMA__ = prisma;
 });
 
 beforeEach(async () => {
