@@ -44,19 +44,21 @@ router.get('/sales', async (req, res, next) => {
     const averageTransaction = totalTransactions > 0 ? totalSales / totalTransactions : 0;
 
     // Group by date
-    const salesByDate = sales.reduce((acc: any, sale) => {
-      const date = sale.createdAt.toISOString().split('T')[0];
-      if (!acc[date]) {
-        acc[date] = {
-          date,
+    const salesByDate = sales.reduce((acc: Record<string, any>, sale) => {
+      const dateStr = sale.createdAt.toISOString().split('T')[0];
+      if (!dateStr) return acc;
+      
+      if (!acc[dateStr]) {
+        acc[dateStr] = {
+          date: dateStr,
           totalSales: 0,
           transactions: 0,
           items: 0
         };
       }
-      acc[date].totalSales += Number(sale.totalAmount);
-      acc[date].transactions += 1;
-      acc[date].items += sale.items.reduce((sum, item) => sum + Number(item.quantity), 0);
+      acc[dateStr].totalSales += Number(sale.totalAmount);
+      acc[dateStr].transactions += 1;
+      acc[dateStr].items += sale.items.reduce((sum, item) => sum + Number(item.quantity), 0);
       return acc;
     }, {});
 
