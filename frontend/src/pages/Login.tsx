@@ -26,6 +26,7 @@ const Login: React.FC = () => {
       if (data.success) {
         localStorage.setItem('accessToken', data.data.accessToken);
         localStorage.setItem('refreshToken', data.data.refreshToken);
+        localStorage.setItem('user', JSON.stringify(data.data.user));
         toast.success('Login successful!');
         navigate('/');
       } else {

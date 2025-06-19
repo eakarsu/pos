@@ -70,8 +70,25 @@ const POS: React.FC = () => {
     if (!barcode.trim()) return;
 
     try {
-      // TODO: Implement barcode lookup
-      console.log('Looking up barcode:', barcode);
+      const token = localStorage.getItem('accessToken');
+      const response = await fetch(`/api/v1/products/barcode/${barcode}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          addToCart({
+            id: data.data.product.id,
+            name: data.data.product.name,
+            price: Number(data.data.product.price)
+          });
+        }
+      } else {
+        console.error('Product not found');
+      }
       setBarcode('');
     } catch (error) {
       console.error('Error looking up product:', error);
@@ -82,11 +99,46 @@ const POS: React.FC = () => {
     if (cart.length === 0) return;
 
     try {
-      // TODO: Implement checkout process
-      console.log('Processing checkout:', { cart, total });
-      clearCart();
+      const token = localStorage.getItem('accessToken');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      
+      const saleData = {
+        userId: user.id,
+        items: cart.map(item => ({
+          productId: item.id,
+          quantity: item.quantity,
+          unitPrice: item.price,
+          taxRate: 8 // 8% tax rate
+        })),
+        payments: [{
+          amount: total,
+          method: 'CASH'
+        }]
+      };
+
+      const response = await fetch('/api/v1/sales', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(saleData)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          console.log('Sale completed:', data.data.sale);
+          clearCart();
+          alert('Sale completed successfully!');
+        }
+      } else {
+        console.error('Checkout failed');
+        alert('Checkout failed. Please try again.');
+      }
     } catch (error) {
       console.error('Error processing checkout:', error);
+      alert('Checkout failed. Please try again.');
     }
   };
 

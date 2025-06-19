@@ -6,6 +6,8 @@ import authRoutes from './auth';
 import productRoutes from './products';
 import salesRoutes from './sales';
 import customerRoutes from './customers';
+import inventoryRoutes from './inventory';
+import reportRoutes from './reports';
 
 const router = Router();
 
@@ -46,9 +48,7 @@ router.use(`${API_PREFIX}/auth`, authRoutes);
 router.use(`${API_PREFIX}/products`, productRoutes);
 router.use(`${API_PREFIX}/sales`, salesRoutes);
 router.use(`${API_PREFIX}/customers`, customerRoutes);
-
-// TODO: Add remaining route modules
-// router.use(`${API_PREFIX}/inventory`, inventoryRoutes);
-// router.use(`${API_PREFIX}/reports`, reportRoutes);
+router.use(`${API_PREFIX}/inventory`, inventoryRoutes);
+router.use(`${API_PREFIX}/reports`, reportRoutes);
 
 export default router;

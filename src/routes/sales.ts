@@ -1,9 +1,13 @@
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { AppError } from '../middleware/errorHandler';
+import { authenticate, authorize } from '../middleware/auth';
 
 const router = Router();
 const prisma = new PrismaClient();
+
+// Apply authentication to all routes
+router.use(authenticate);
 
 // Get all sales
 router.get('/', async (req, res, next) => {
