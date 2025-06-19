@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { DocumentTextIcon, VideoCameraIcon, AcademicCapIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
+import { DocumentTextIcon, VideoCameraIcon, AcademicCapIcon, ChatBubbleOvalLeftEllipsisIcon } from '@heroicons/react/24/outline';
 
 const Resources: React.FC = () => {
   const resources = [
@@ -23,7 +23,7 @@ const Resources: React.FC = () => {
       link: '/training'
     },
     {
-      icon: ChatBubbleLeftRightIcon,
+      icon: ChatBubbleOvalLeftEllipsisIcon,
       title: 'Community Forum',
       description: 'Connect with other users, share tips, and get answers to your questions.',
       link: '/community'

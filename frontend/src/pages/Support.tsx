@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ChatBubbleLeftRightIcon, PhoneIcon, EnvelopeIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
+import { ChatBubbleOvalLeftEllipsisIcon, PhoneIcon, EnvelopeIcon, QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
 
 const Support: React.FC = () => {
   const supportOptions = [
     {
-      icon: ChatBubbleLeftRightIcon,
+      icon: ChatBubbleOvalLeftEllipsisIcon,
       title: 'Live Chat',
       description: 'Get instant help from our support team',
       availability: '24/7 Support',

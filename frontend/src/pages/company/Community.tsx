@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ChatBubbleLeftRightIcon, UserGroupIcon, BookOpenIcon, VideoCameraIcon } from '@heroicons/react/24/outline';
+import { ChatBubbleOvalLeftEllipsisIcon, UserGroupIcon, BookOpenIcon, VideoCameraIcon } from '@heroicons/react/24/outline';
 
 const Community: React.FC = () => {
   const communityFeatures = [
     {
-      icon: ChatBubbleLeftRightIcon,
+      icon: ChatBubbleOvalLeftEllipsisIcon,
       title: 'Discussion Forums',
       description: 'Connect with other POS Pro users, share tips, and get answers to your questions.',
       link: '#forums'

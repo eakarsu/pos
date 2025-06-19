@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { HandshakeIcon, CogIcon, GlobeAltIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
+import { UserGroupIcon, CogIcon, GlobeAltIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
 
 const Partners: React.FC = () => {
   const partnerTypes = [
     {
-      icon: HandshakeIcon,
+      icon: UserGroupIcon,
       title: 'Technology Partners',
       description: 'Integrate your software with our POS platform to reach thousands of merchants.',
       benefits: ['API access', 'Co-marketing opportunities', 'Technical support', 'Revenue sharing']
