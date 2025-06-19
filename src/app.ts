@@ -96,4 +96,5 @@ io.on('connection', (socket) => {
 // Make io available to other modules
 app.set('io', io);
 
-export default server;
+export default app;
+export { server };

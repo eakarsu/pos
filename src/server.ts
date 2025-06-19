@@ -1,4 +1,4 @@
-import app from './app';
+import { server } from './app';
 import { config } from './config/environment';
 import { logger } from './utils/logger';
 
@@ -7,7 +7,7 @@ const PORT = config.port || 3000;
 async function startServer() {
   try {
     // Start server
-    const server = app.listen(PORT, () => {
+    server.listen(PORT, () => {
       logger.info(`🚀 Server running on port ${PORT}`);
       logger.info(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
       logger.info(`🏥 Health Check: http://localhost:${PORT}/health`);
