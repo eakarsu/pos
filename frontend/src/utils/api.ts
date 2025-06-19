@@ -160,6 +160,56 @@ class ApiService {
       body: JSON.stringify({ value, type })
     });
   }
+
+  // System management methods
+  async backupDatabase() {
+    return this.request('/system/backup', {
+      method: 'POST'
+    });
+  }
+
+  async exportData(format: 'csv' | 'json' = 'csv') {
+    return this.request(`/system/export?format=${format}`, {
+      method: 'POST'
+    });
+  }
+
+  async getSystemLogs(lines: number = 1000) {
+    return this.request(`/system/logs?lines=${lines}`);
+  }
+
+  async clearCache() {
+    return this.request('/system/clear-cache', {
+      method: 'POST'
+    });
+  }
+
+  async getSystemInfo() {
+    return this.request('/system/info');
+  }
+
+  async downloadFile(url: string, filename: string) {
+    const token = localStorage.getItem('accessToken');
+    const response = await fetch(`/api/v1${url}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Download failed');
+    }
+
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(downloadUrl);
+  }
 }
 
 export const apiService = new ApiService();

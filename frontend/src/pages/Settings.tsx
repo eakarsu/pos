@@ -518,6 +518,90 @@ const Settings: React.FC = () => {
     </div>
   );
 
+  const [systemInfo, setSystemInfo] = useState<any>(null);
+  const [showLogsModal, setShowLogsModal] = useState(false);
+  const [systemLogs, setSystemLogs] = useState('');
+
+  const handleBackupDatabase = async () => {
+    try {
+      setLoading(true);
+      const result = await apiService.backupDatabase();
+      if (result.success) {
+        toast.success('Database backup created successfully!');
+        // Auto-download the backup
+        await apiService.downloadFile(`/system/backup/${result.data.filename}`, result.data.filename);
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to backup database');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleExportData = async (format: 'csv' | 'json') => {
+    try {
+      setLoading(true);
+      const result = await apiService.exportData(format);
+      if (result.success) {
+        toast.success(`Data exported to ${format.toUpperCase()} successfully!`);
+        // Auto-download the export
+        await apiService.downloadFile(`/system/export/${result.data.filename}`, result.data.filename);
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to export data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewLogs = async () => {
+    try {
+      setLoading(true);
+      const result = await apiService.getSystemLogs(1000);
+      if (result.success) {
+        setSystemLogs(result.data.logs);
+        setShowLogsModal(true);
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to load system logs');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClearCache = async () => {
+    try {
+      setLoading(true);
+      const result = await apiService.clearCache();
+      if (result.success) {
+        toast.success('Cache cleared successfully!');
+        const results = result.data.results.join('\n');
+        toast.success(`Cache clearing results:\n${results}`, { duration: 5000 });
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to clear cache');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadSystemInfo = async () => {
+    try {
+      const result = await apiService.getSystemInfo();
+      if (result.success) {
+        setSystemInfo(result.data);
+      }
+    } catch (error) {
+      console.error('Failed to load system info:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'system') {
+      loadSystemInfo();
+    }
+  }, [activeTab]);
+
   const renderSystemSettings = () => (
     <div className="space-y-6">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -526,7 +610,11 @@ const Settings: React.FC = () => {
           System Management
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <button className="p-4 border border-gray-300 rounded-lg hover:bg-gray-50 text-left">
+          <button 
+            onClick={handleBackupDatabase}
+            disabled={loading}
+            className="p-4 border border-gray-300 rounded-lg hover:bg-gray-50 text-left disabled:opacity-50"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="font-medium text-gray-900">Backup Database</h4>
@@ -535,16 +623,44 @@ const Settings: React.FC = () => {
               <ChevronRightIcon className="h-5 w-5 text-gray-400" />
             </div>
           </button>
-          <button className="p-4 border border-gray-300 rounded-lg hover:bg-gray-50 text-left">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="font-medium text-gray-900">Export Data</h4>
-                <p className="text-sm text-gray-500">Export your data to CSV/Excel</p>
+          
+          <div className="relative">
+            <button 
+              onClick={() => handleExportData('csv')}
+              disabled={loading}
+              className="w-full p-4 border border-gray-300 rounded-lg hover:bg-gray-50 text-left disabled:opacity-50"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium text-gray-900">Export Data</h4>
+                  <p className="text-sm text-gray-500">Export your data to CSV/JSON</p>
+                </div>
+                <ChevronRightIcon className="h-5 w-5 text-gray-400" />
               </div>
-              <ChevronRightIcon className="h-5 w-5 text-gray-400" />
+            </button>
+            <div className="absolute top-2 right-8 flex space-x-1">
+              <button
+                onClick={() => handleExportData('csv')}
+                disabled={loading}
+                className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 disabled:opacity-50"
+              >
+                CSV
+              </button>
+              <button
+                onClick={() => handleExportData('json')}
+                disabled={loading}
+                className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 disabled:opacity-50"
+              >
+                JSON
+              </button>
             </div>
-          </button>
-          <button className="p-4 border border-gray-300 rounded-lg hover:bg-gray-50 text-left">
+          </div>
+          
+          <button 
+            onClick={handleViewLogs}
+            disabled={loading}
+            className="p-4 border border-gray-300 rounded-lg hover:bg-gray-50 text-left disabled:opacity-50"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="font-medium text-gray-900">System Logs</h4>
@@ -553,7 +669,12 @@ const Settings: React.FC = () => {
               <ChevronRightIcon className="h-5 w-5 text-gray-400" />
             </div>
           </button>
-          <button className="p-4 border border-gray-300 rounded-lg hover:bg-gray-50 text-left">
+          
+          <button 
+            onClick={handleClearCache}
+            disabled={loading}
+            className="p-4 border border-gray-300 rounded-lg hover:bg-gray-50 text-left disabled:opacity-50"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="font-medium text-gray-900">Clear Cache</h4>
@@ -570,25 +691,78 @@ const Settings: React.FC = () => {
           <DocumentTextIcon className="h-5 w-5 mr-2 text-blue-600" />
           System Information
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <div>
-            <span className="font-medium text-gray-700">Version:</span>
-            <span className="ml-2 text-gray-900">1.0.0</span>
+        {systemInfo ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="font-medium text-gray-700">Version:</span>
+              <span className="ml-2 text-gray-900">{systemInfo.version}</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Node Version:</span>
+              <span className="ml-2 text-gray-900">{systemInfo.nodeVersion}</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Database:</span>
+              <span className="ml-2 text-gray-900">{systemInfo.database}</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Platform:</span>
+              <span className="ml-2 text-gray-900">{systemInfo.platform}</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Uptime:</span>
+              <span className="ml-2 text-gray-900">{Math.floor(systemInfo.uptime / 3600)}h {Math.floor((systemInfo.uptime % 3600) / 60)}m</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Memory Usage:</span>
+              <span className="ml-2 text-gray-900">{Math.round(systemInfo.memoryUsage.used / 1024 / 1024)}MB</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Environment:</span>
+              <span className="ml-2 text-gray-900">{systemInfo.environment}</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Last Updated:</span>
+              <span className="ml-2 text-gray-900">{new Date(systemInfo.timestamp).toLocaleString()}</span>
+            </div>
           </div>
-          <div>
-            <span className="font-medium text-gray-700">Database:</span>
-            <span className="ml-2 text-gray-900">PostgreSQL</span>
+        ) : (
+          <div className="text-center py-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="text-gray-500 mt-2">Loading system information...</p>
           </div>
-          <div>
-            <span className="font-medium text-gray-700">Last Backup:</span>
-            <span className="ml-2 text-gray-900">2024-06-19 10:30 AM</span>
-          </div>
-          <div>
-            <span className="font-medium text-gray-700">Uptime:</span>
-            <span className="ml-2 text-gray-900">2 days, 14 hours</span>
+        )}
+      </div>
+
+      {/* System Logs Modal */}
+      {showLogsModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-medium text-gray-900">System Logs</h3>
+                <button
+                  onClick={() => setShowLogsModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
+              </div>
+              <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm max-h-96 overflow-y-auto">
+                <pre className="whitespace-pre-wrap">{systemLogs}</pre>
+              </div>
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={() => setShowLogsModal(false)}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 

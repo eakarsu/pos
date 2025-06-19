@@ -11,6 +11,7 @@ import reportRoutes from './reports';
 import categoryRoutes from './categories';
 import dashboardRoutes from './dashboard';
 import settingsRoutes from './settings';
+import systemRoutes from './system';
 
 const router = Router();
 
@@ -45,6 +46,7 @@ router.get('/', (req, res) => {
       categories: '/api/v1/categories',
       dashboard: '/api/v1/dashboard',
       settings: '/api/v1/settings',
+      system: '/api/v1/system',
     },
   });
 });
@@ -59,5 +61,6 @@ router.use(`/api/v1/reports`, reportRoutes);
 router.use(`/api/v1/categories`, categoryRoutes);
 router.use(`/api/v1/dashboard`, dashboardRoutes);
 router.use(`/api/v1/settings`, settingsRoutes);
+router.use(`/api/v1/system`, systemRoutes);
 
 export default router;
