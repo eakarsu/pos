@@ -90,19 +90,15 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
     try {
       setSettings(prev => ({ ...prev, isLoading: true }));
       
-      const [storeResponse, posResponse] = await Promise.all([
-        apiService.getSettings('store'),
-        apiService.getSettings('pos')
-      ]);
-
+      // For now, just use default settings since backend endpoints don't exist yet
+      // TODO: Implement backend settings endpoints
       setSettings({
-        store: storeResponse.success ? storeResponse.data : defaultStoreSettings,
-        pos: posResponse.success ? posResponse.data : defaultPOSSettings,
+        store: defaultStoreSettings,
+        pos: defaultPOSSettings,
         isLoading: false
       });
     } catch (error) {
       console.error('Failed to fetch settings:', error);
-      // Use default settings if API fails
       setSettings({
         store: defaultStoreSettings,
         pos: defaultPOSSettings,
@@ -113,13 +109,10 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
 
   const updateStoreSettings = async (newSettings: StoreSettings) => {
     try {
-      const response = await apiService.updateSettings('store', newSettings);
-      if (response.success) {
-        setSettings(prev => ({ ...prev, store: newSettings }));
-        toast.success('Store settings updated successfully');
-      } else {
-        throw new Error(response.message || 'Failed to update settings');
-      }
+      // For now, just update local state since backend endpoints don't exist yet
+      // TODO: Implement backend settings endpoints
+      setSettings(prev => ({ ...prev, store: newSettings }));
+      toast.success('Store settings updated successfully');
     } catch (error: any) {
       toast.error(error.message || 'Failed to update store settings');
       throw error;
@@ -128,13 +121,10 @@ export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children }) 
 
   const updatePOSSettings = async (newSettings: POSSettings) => {
     try {
-      const response = await apiService.updateSettings('pos', newSettings);
-      if (response.success) {
-        setSettings(prev => ({ ...prev, pos: newSettings }));
-        toast.success('POS settings updated successfully');
-      } else {
-        throw new Error(response.message || 'Failed to update settings');
-      }
+      // For now, just update local state since backend endpoints don't exist yet
+      // TODO: Implement backend settings endpoints
+      setSettings(prev => ({ ...prev, pos: newSettings }));
+      toast.success('POS settings updated successfully');
     } catch (error: any) {
       toast.error(error.message || 'Failed to update POS settings');
       throw error;
