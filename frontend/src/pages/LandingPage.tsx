@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   CheckCircleIcon,
@@ -13,6 +13,13 @@ import {
 
 const LandingPage: React.FC = () => {
   console.log('LandingPage: Component is rendering');
+  
+  useEffect(() => {
+    console.log('LandingPage: useEffect - component mounted');
+    return () => {
+      console.log('LandingPage: useEffect cleanup - component unmounting');
+    };
+  }, []);
   
   const features = [
     {
@@ -89,7 +96,7 @@ const LandingPage: React.FC = () => {
             <div className="flex items-center space-x-4">
               <Link to="/login" className="text-gray-600 hover:text-blue-600 transition-colors">Login</Link>
               <Link 
-                to="/app/dashboard" 
+                to="/login" 
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
               >
                 Get Started
@@ -113,7 +120,7 @@ const LandingPage: React.FC = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
-                to="/app/dashboard" 
+                to="/login" 
                 className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors"
               >
                 Start Free Trial
@@ -213,7 +220,7 @@ const LandingPage: React.FC = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 
-              to="/app/dashboard" 
+              to="/login" 
               className="bg-white text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-50 transition-colors"
             >
               Start Your Free Trial
