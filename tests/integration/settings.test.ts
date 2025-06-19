@@ -1,34 +1,20 @@
 import { PrismaClient, SystemSetting } from '@prisma/client';
-import bcrypt from 'bcryptjs';
-
-const prisma = (global as any).__PRISMA__ as PrismaClient;
+import { setupTestDatabase, testPrisma } from '../setup/testSetup';
 
 describe('Settings Integration Tests', () => {
   let userId: string;
   let adminUser: any;
 
   beforeEach(async () => {
-    // Create a test admin user
-    const hashedPassword = await bcrypt.hash('admin123', 12);
-    adminUser = await prisma.user.create({
-      data: {
-        email: 'admin@test.com',
-        username: 'admin',
-        firstName: 'Test',
-        lastName: 'Admin',
-        password: hashedPassword,
-        role: 'ADMIN',
-        employeeId: 'TEST001',
-        phone: '+1-555-123-4567',
-        hireDate: new Date(),
-      }
-    });
+    // Setup test database and get test data
+    const testData = await setupTestDatabase();
+    adminUser = testData.adminUser;
     userId = adminUser.id;
   });
 
   describe('System Settings CRUD Operations', () => {
     it('should create new system settings', async () => {
-      const setting = await prisma.systemSetting.create({
+      const setting = await testPrisma.systemSetting.create({
         data: {
           key: 'test.setting',
           value: 'test value',
@@ -44,7 +30,7 @@ describe('Settings Integration Tests', () => {
 
     it('should retrieve system settings by category', async () => {
       // Create test settings
-      await prisma.systemSetting.createMany({
+      await testPrisma.systemSetting.createMany({
         data: [
           { key: 'store.name', value: 'Test Store', type: 'string', category: 'store' },
           { key: 'store.taxRate', value: '8.25', type: 'number', category: 'store' },
@@ -52,7 +38,7 @@ describe('Settings Integration Tests', () => {
         ]
       });
 
-      const storeSettings = await prisma.systemSetting.findMany({
+      const storeSettings = await testPrisma.systemSetting.findMany({
         where: { category: 'store' }
       });
 
@@ -61,7 +47,7 @@ describe('Settings Integration Tests', () => {
     });
 
     it('should update existing system settings', async () => {
-      const setting = await prisma.systemSetting.create({
+      const setting = await testPrisma.systemSetting.create({
         data: {
           key: 'store.name',
           value: 'Old Store Name',
@@ -70,7 +56,7 @@ describe('Settings Integration Tests', () => {
         }
       });
 
-      const updatedSetting = await prisma.systemSetting.update({
+      const updatedSetting = await testPrisma.systemSetting.update({
         where: { id: setting.id },
         data: { value: 'New Store Name' }
       });
@@ -79,7 +65,7 @@ describe('Settings Integration Tests', () => {
     });
 
     it('should delete system settings', async () => {
-      const setting = await prisma.systemSetting.create({
+      const setting = await testPrisma.systemSetting.create({
         data: {
           key: 'temp.setting',
           value: 'temporary',
@@ -88,11 +74,11 @@ describe('Settings Integration Tests', () => {
         }
       });
 
-      await prisma.systemSetting.delete({
+      await testPrisma.systemSetting.delete({
         where: { id: setting.id }
       });
 
-      const deletedSetting = await prisma.systemSetting.findUnique({
+      const deletedSetting = await testPrisma.systemSetting.findUnique({
         where: { id: setting.id }
       });
 
@@ -109,7 +95,7 @@ describe('Settings Integration Tests', () => {
       ];
 
       for (const setting of validStoreSettings) {
-        const created = await prisma.systemSetting.create({ data: setting });
+        const created = await testPrisma.systemSetting.create({ data: setting });
         expect(created.key).toBe(setting.key);
         expect(created.value).toBe(setting.value);
       }
@@ -123,14 +109,14 @@ describe('Settings Integration Tests', () => {
       ];
 
       for (const setting of validPOSSettings) {
-        const created = await prisma.systemSetting.create({ data: setting });
+        const created = await testPrisma.systemSetting.create({ data: setting });
         expect(created.key).toBe(setting.key);
         expect(created.value).toBe(setting.value);
       }
     });
 
     it('should handle boolean type conversion', async () => {
-      const booleanSetting = await prisma.systemSetting.create({
+      const booleanSetting = await testPrisma.systemSetting.create({
         data: {
           key: 'pos.autoPrint',
           value: 'true',
@@ -145,7 +131,7 @@ describe('Settings Integration Tests', () => {
     });
 
     it('should handle number type conversion', async () => {
-      const numberSetting = await prisma.systemSetting.create({
+      const numberSetting = await testPrisma.systemSetting.create({
         data: {
           key: 'store.taxRate',
           value: '8.25',
@@ -162,7 +148,7 @@ describe('Settings Integration Tests', () => {
 
   describe('Settings Categories', () => {
     it('should organize settings by category', async () => {
-      await prisma.systemSetting.createMany({
+      await testPrisma.systemSetting.createMany({
         data: [
           { key: 'store.name', value: 'Test Store', type: 'string', category: 'store' },
           { key: 'store.address', value: '123 Main St', type: 'string', category: 'store' },
@@ -172,13 +158,13 @@ describe('Settings Integration Tests', () => {
         ]
       });
 
-      const storeSettings = await prisma.systemSetting.findMany({
+      const storeSettings = await testPrisma.systemSetting.findMany({
         where: { category: 'store' }
       });
-      const posSettings = await prisma.systemSetting.findMany({
+      const posSettings = await testPrisma.systemSetting.findMany({
         where: { category: 'pos' }
       });
-      const userSettings = await prisma.systemSetting.findMany({
+      const userSettings = await testPrisma.systemSetting.findMany({
         where: { category: 'user' }
       });
 
@@ -200,10 +186,10 @@ describe('Settings Integration Tests', () => {
         category: 'test'
       }));
 
-      await prisma.systemSetting.createMany({ data: bulkSettings });
+      await testPrisma.systemSetting.createMany({ data: bulkSettings });
 
       // Retrieve all test settings
-      const settings = await prisma.systemSetting.findMany({
+      const settings = await testPrisma.systemSetting.findMany({
         where: { category: 'test' }
       });
 
@@ -225,9 +211,9 @@ describe('Settings Integration Tests', () => {
         { key: 'store.currency', value: 'USD', type: 'string', category: 'store' }
       ];
 
-      await prisma.systemSetting.createMany({ data: defaultStoreSettings });
+      await testPrisma.systemSetting.createMany({ data: defaultStoreSettings });
 
-      const storeSettings = await prisma.systemSetting.findMany({
+      const storeSettings = await testPrisma.systemSetting.findMany({
         where: { category: 'store' }
       });
 
@@ -244,9 +230,9 @@ describe('Settings Integration Tests', () => {
         { key: 'pos.cashDrawer', value: 'true', type: 'boolean', category: 'pos' }
       ];
 
-      await prisma.systemSetting.createMany({ data: defaultPOSSettings });
+      await testPrisma.systemSetting.createMany({ data: defaultPOSSettings });
 
-      const posSettings = await prisma.systemSetting.findMany({
+      const posSettings = await testPrisma.systemSetting.findMany({
         where: { category: 'pos' }
       });
 
@@ -265,9 +251,9 @@ describe('Settings Integration Tests', () => {
         { key: 'user.sessionTimeout', value: '30', type: 'number', category: 'user' }
       ];
 
-      await prisma.systemSetting.createMany({ data: userSettings });
+      await testPrisma.systemSetting.createMany({ data: userSettings });
 
-      const settings = await prisma.systemSetting.findMany({
+      const settings = await testPrisma.systemSetting.findMany({
         where: { category: 'user' }
       });
 
