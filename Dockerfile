@@ -14,6 +14,7 @@ RUN npm ci --only=production
 # Copy source code
 COPY src ./src
 COPY prisma ./prisma
+COPY scripts ./scripts
 
 # Generate Prisma client
 RUN npx prisma generate
@@ -31,5 +32,11 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3000/health || exit 1
 
-# Start the application
-CMD ["npm", "start"]
+# Copy the start script
+COPY scripts/start.sh ./scripts/start.sh
+
+# Make the script executable
+RUN chmod +x ./scripts/start.sh
+
+# Start the application using the start script
+CMD ["./scripts/start.sh"]
