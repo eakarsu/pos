@@ -36,15 +36,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Check for existing authentication on app start
     const checkAuth = () => {
       try {
-        // For now, clear any existing tokens to force fresh login
-        // This prevents 401 errors from stale/invalid tokens
-        console.log('Clearing existing auth tokens to force fresh login');
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
-        setUser(null);
+        const accessToken = localStorage.getItem('accessToken');
+        const refreshToken = localStorage.getItem('refreshToken');
+        const storedUser = localStorage.getItem('user');
+
+        if (accessToken && refreshToken && storedUser) {
+          try {
+            const userData = JSON.parse(storedUser);
+            setUser(userData);
+            console.log('Restored user session:', userData.email);
+          } catch (parseError) {
+            console.error('Error parsing stored user data:', parseError);
+            // Clear invalid stored data
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('user');
+            setUser(null);
+          }
+        } else {
+          console.log('No existing authentication found');
+          setUser(null);
+        }
       } catch (error) {
         console.error('Error checking authentication:', error);
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
