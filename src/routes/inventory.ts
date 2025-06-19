@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { AppError } from '../middleware/errorHandler';
-import { authenticate, authorize } from '../middleware/auth';
+import { authenticate, authorize, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -120,7 +120,7 @@ router.get('/:id', async (req, res, next) => {
 });
 
 // Create inventory adjustment
-router.post('/adjustment', authorize('ADMIN', 'MANAGER'), async (req, res, next) => {
+router.post('/adjustment', authorize('ADMIN', 'MANAGER'), async (req: AuthRequest, res, next) => {
   try {
     const { productId, variantId, quantity, reason, batchNumber } = req.body;
     const userId = req.user?.id;
@@ -193,28 +193,10 @@ router.get('/alerts/low-stock', async (req, res, next) => {
       where: {
         product: {
           isActive: true
-        },
-        OR: [
-          {
-            quantity: {
-              lte: prisma.product.fields.reorderPoint
-            }
-          }
-        ]
+        }
       },
-      include: {
-        product: {
-          include: {
-            category: true,
-            supplier: true
-          }
-        },
-        variant: true
-      },
-      orderBy: {
-        quantity: 'asc'
-      }
-    });
+    // Sort by quantity ascending
+    lowStockItems.sort((a, b) => a.quantity - b.quantity);
 
     res.json({
       success: true,
