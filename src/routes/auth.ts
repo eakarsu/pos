@@ -13,6 +13,24 @@ prisma.$connect().catch((error) => {
   console.error('Failed to connect to database:', error);
 });
 
+// Test database connection
+router.get('/test-db', async (req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({
+      success: true,
+      message: 'Database connection successful'
+    });
+  } catch (error) {
+    console.error('Database test failed:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Database connection failed',
+      error: error.message
+    });
+  }
+});
+
 // Register
 router.post('/register', async (req, res, next) => {
   try {
@@ -67,20 +85,36 @@ router.post('/register', async (req, res, next) => {
 // Login
 router.post('/login', async (req, res, next) => {
   try {
+    console.log('Login attempt:', { email: req.body.email });
+    
     const { email, password } = req.body;
 
     // Validate input
     if (!email || !password) {
+      console.log('Missing email or password');
       return res.status(400).json({
         success: false,
         message: 'Email and password are required'
       });
     }
 
+    // Check if JWT secrets are configured
+    if (!config.jwtSecret || !config.jwtRefreshSecret) {
+      console.error('JWT secrets not configured');
+      return res.status(500).json({
+        success: false,
+        message: 'Server configuration error'
+      });
+    }
+
+    console.log('Attempting to find user in database...');
+    
     // Find user
     const user = await prisma.user.findUnique({
       where: { email }
     });
+
+    console.log('User found:', user ? 'Yes' : 'No');
 
     if (!user || !user.isActive) {
       return res.status(401).json({
@@ -89,14 +123,21 @@ router.post('/login', async (req, res, next) => {
       });
     }
 
+    console.log('Checking password...');
+    
     // Check password
     const isValidPassword = await bcrypt.compare(password, user.password);
+    
+    console.log('Password valid:', isValidPassword);
+    
     if (!isValidPassword) {
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
       });
     }
+
+    console.log('Generating tokens...');
 
     // Generate tokens
     const accessToken = jwt.sign(
@@ -111,6 +152,8 @@ router.post('/login', async (req, res, next) => {
       { expiresIn: '7d' }
     );
 
+    console.log('Saving refresh token...');
+
     // Save refresh token
     await prisma.refreshToken.create({
       data: {
@@ -120,11 +163,15 @@ router.post('/login', async (req, res, next) => {
       }
     });
 
+    console.log('Updating last login...');
+
     // Update last login
     await prisma.user.update({
       where: { id: user.id },
       data: { lastLogin: new Date() }
     });
+
+    console.log('Login successful for user:', user.email);
 
     res.json({
       success: true,
@@ -143,10 +190,16 @@ router.post('/login', async (req, res, next) => {
       }
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Login error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
+    
     res.status(500).json({
       success: false,
-      message: 'Internal server error during login'
+      message: 'Internal server error during login',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
