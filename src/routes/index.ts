@@ -8,6 +8,7 @@ import salesRoutes from './sales';
 import customerRoutes from './customers';
 import inventoryRoutes from './inventory';
 import reportRoutes from './reports';
+import categoryRoutes from './categories';
 
 const router = Router();
 
@@ -39,6 +40,7 @@ router.get('/', (req, res) => {
       customers: '/api/v1/customers',
       inventory: '/api/v1/inventory',
       reports: '/api/v1/reports',
+      categories: '/api/v1/categories',
     },
   });
 });
@@ -50,5 +52,6 @@ router.use(`/api/v1/sales`, salesRoutes);
 router.use(`/api/v1/customers`, customerRoutes);
 router.use(`/api/v1/inventory`, inventoryRoutes);
 router.use(`/api/v1/reports`, reportRoutes);
+router.use(`/api/v1/categories`, categoryRoutes);
 
 export default router;
