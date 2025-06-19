@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { Toaster } from 'react-hot-toast';
 
@@ -52,19 +52,44 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <>{children}</>;
 };
 
+// Navigation tracker component
+const NavigationTracker: React.FC = () => {
+  const location = useLocation();
+  
+  useEffect(() => {
+    console.log('NAVIGATION: Route changed to:', location.pathname);
+    console.log('NAVIGATION: Full location:', location);
+  }, [location]);
+  
+  return null;
+};
+
 // App Routes Component (needs to be inside AuthProvider)
 const AppRoutes: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
   
   // Debug logging
   console.log('AppRoutes render - isAuthenticated:', isAuthenticated, 'isLoading:', isLoading);
+  console.log('Current URL:', window.location.href);
+  console.log('Current pathname:', window.location.pathname);
   
   return (
     <Router>
+      <NavigationTracker />
       <div className="App">
         <Routes>
+          {/* Test route to verify routing works */}
+          <Route path="/test" element={<div style={{padding: '20px', fontSize: '24px'}}>TEST ROUTE WORKS!</div>} />
+          
           {/* Public Routes - Always accessible, no auth checks */}
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={
+            <div>
+              <div style={{padding: '20px', background: 'yellow', margin: '10px'}}>
+                DEBUG: Root route is rendering! Time: {new Date().toISOString()}
+              </div>
+              <LandingPage />
+            </div>
+          } />
           <Route path="/features" element={<Features />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/login" element={isLoading ? (
