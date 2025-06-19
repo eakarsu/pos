@@ -178,7 +178,8 @@ const Inventory: React.FC = () => {
               <p className="text-2xl font-bold text-yellow-600">
                 {inventoryItems.filter(item => {
                   const available = item.quantity - item.reservedQty;
-                  return available <= (item.product?.minStock || 0);
+                  const threshold = item.product?.minStock || settings.pos.lowStockThreshold;
+                  return available <= threshold;
                 }).length}
               </p>
             </div>
