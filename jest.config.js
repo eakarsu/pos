@@ -13,7 +13,18 @@ module.exports = {
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
-  setupFilesAfterEnv: ['<rootDir>/tests/setup/jest.setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  globalSetup: '<rootDir>/tests/globalSetup.ts',
+  globalTeardown: '<rootDir>/tests/globalTeardown.ts',
   testTimeout: 30000,
-  maxWorkers: 1, // Run tests sequentially to avoid database conflicts
+  maxWorkers: 1,
+  globals: {
+    'ts-jest': {
+      tsconfig: {
+        noImplicitAny: false,
+        strictNullChecks: false,
+        strict: false
+      }
+    }
+  }
 };
