@@ -1,6 +1,5 @@
 import { PrismaClient, SystemSetting } from '@prisma/client';
-
-const prisma = (global as any).__PRISMA__ as PrismaClient;
+import { testPrisma, setupTestDatabase, cleanupTestDatabase } from '../setup/testSetup';
 
 // Mock SettingsService for unit testing
 class SettingsService {
@@ -150,7 +149,7 @@ describe('SettingsService Unit Tests', () => {
 
   describe('getSetting', () => {
     it('should retrieve a specific setting', async () => {
-      await prisma.systemSetting.create({
+      await testPrisma.systemSetting.create({
         data: {
           key: 'store.name',
           value: 'Test Store',
@@ -173,14 +172,14 @@ describe('SettingsService Unit Tests', () => {
     it('should create a new setting', async () => {
       await settingsService.setSetting('store.name', 'New Store', 'string', 'store');
 
-      const setting = await prisma.systemSetting.findUnique({
+      const setting = await testPrisma.systemSetting.findUnique({
         where: { key: 'store.name' }
       });
       expect(setting?.value).toBe('New Store');
     });
 
     it('should update existing setting', async () => {
-      await prisma.systemSetting.create({
+      await testPrisma.systemSetting.create({
         data: {
           key: 'store.name',
           value: 'Old Store',
@@ -191,7 +190,7 @@ describe('SettingsService Unit Tests', () => {
 
       await settingsService.setSetting('store.name', 'Updated Store', 'string', 'store');
 
-      const setting = await prisma.systemSetting.findUnique({
+      const setting = await testPrisma.systemSetting.findUnique({
         where: { key: 'store.name' }
       });
       expect(setting?.value).toBe('Updated Store');
@@ -200,7 +199,7 @@ describe('SettingsService Unit Tests', () => {
 
   describe('getSettingsByCategory', () => {
     it('should retrieve all settings for a category', async () => {
-      await prisma.systemSetting.createMany({
+      await testPrisma.systemSetting.createMany({
         data: [
           { key: 'store.name', value: 'Test Store', type: 'string', category: 'store' },
           { key: 'store.address', value: '123 Test St', type: 'string', category: 'store' },
@@ -281,7 +280,7 @@ describe('SettingsService Unit Tests', () => {
   describe('resetToDefaults', () => {
     it('should reset settings to defaults', async () => {
       // Create some custom settings
-      await prisma.systemSetting.createMany({
+      await testPrisma.systemSetting.createMany({
         data: [
           { key: 'store.name', value: 'Custom Store', type: 'string', category: 'store' },
           { key: 'store.taxRate', value: '15.5', type: 'number', category: 'store' }
