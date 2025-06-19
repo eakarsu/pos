@@ -9,18 +9,18 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('admin123');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login, isAuthenticated, isLoading } = useAuth();
+  const { login, isAuthenticated, isLoading, user } = useAuth();
 
   console.log('Login component - isAuthenticated:', isAuthenticated, 'isLoading:', isLoading);
 
   useEffect(() => {
     console.log('Login useEffect - isAuthenticated:', isAuthenticated, 'isLoading:', isLoading);
-    // Only redirect if not loading and actually authenticated
-    if (!isLoading && isAuthenticated) {
+    // Only redirect if we're absolutely sure the user is authenticated and not loading
+    if (isAuthenticated && !isLoading && user) {
       console.log('Login: Redirecting authenticated user to dashboard');
       navigate('/app/dashboard', { replace: true });
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, navigate, user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,17 +43,8 @@ const Login: React.FC = () => {
     }
   };
 
-  // Show loading while auth state is being determined
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  // Don't show loading screen here - let the route handle it
+  // This prevents the login form from flashing before redirect
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
