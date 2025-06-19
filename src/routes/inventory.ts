@@ -169,7 +169,7 @@ router.post('/adjustment', authorize('ADMIN', 'MANAGER'), async (req: AuthReques
           type: 'ADJUSTMENT',
           quantity,
           reason,
-          userId
+          userId: userId || null
         }
       });
 
@@ -189,12 +189,29 @@ router.post('/adjustment', authorize('ADMIN', 'MANAGER'), async (req: AuthReques
 // Get low stock items
 router.get('/alerts/low-stock', async (req, res, next) => {
   try {
-    const lowStockItems = await prisma.inventoryItem.findMany({
+    // Get products with their reorder points and filter in memory
+    const allItems = await prisma.inventoryItem.findMany({
       where: {
         product: {
           isActive: true
         }
       },
+      include: {
+        product: {
+          include: {
+            category: true,
+            supplier: true
+          }
+        },
+        variant: true
+      }
+    });
+
+    // Filter items where quantity is at or below reorder point
+    const lowStockItems = allItems.filter(item => 
+      item.quantity <= (item.product.reorderPoint || 0)
+    );
+
     // Sort by quantity ascending
     lowStockItems.sort((a, b) => a.quantity - b.quantity);
 
