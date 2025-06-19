@@ -1,6 +1,25 @@
 version: '3.8'
 
 services:
+  # POS Frontend (React App)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pos_frontend
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      NODE_ENV: production
+    networks:
+      - pos_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
@@ -34,29 +53,29 @@ services:
     networks:
       - pos_network
 
-  # POS Backend API
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: pos_api
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    environment:
-      NODE_ENV: development
-      DATABASE_URL: postgresql://pos_user:pos_password@postgres:5432/pos_system?schema=public
-      REDIS_URL: redis://redis:6379
-      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
-      JWT_REFRESH_SECRET: your-super-secret-refresh-key-change-this-in-production
-    depends_on:
-      - postgres
-      - redis
-    volumes:
-      - ./src:/app/src
-      - ./uploads:/app/uploads
-    networks:
-      - pos_network
+  # POS Backend API (when available)
+  # api:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   container_name: pos_api
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     NODE_ENV: development
+  #     DATABASE_URL: postgresql://postgres:postgres@postgres:5432/pos_system?schema=public
+  #     REDIS_URL: redis://redis:6379
+  #     JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+  #     JWT_REFRESH_SECRET: your-super-secret-refresh-key-change-this-in-production
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #   volumes:
+  #     - ./backend/src:/app/src
+  #     - ./backend/uploads:/app/uploads
+  #   networks:
+  #     - pos_network
 
   # Adminer (Database Management UI)
   adminer:
@@ -64,7 +83,7 @@ services:
     container_name: pos_adminer
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "8081:8080"
     depends_on:
       - postgres
     networks:
@@ -76,7 +95,7 @@ services:
     container_name: pos_redis_commander
     restart: unless-stopped
     ports:
-      - "8081:8081"
+      - "8082:8081"
     environment:
       REDIS_HOSTS: local:redis:6379
     depends_on:
