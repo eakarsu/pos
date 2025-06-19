@@ -1,21 +1,11 @@
 import app from './app';
 import { config } from './config/environment';
 import { logger } from './utils/logger';
-import { connectDatabase } from './config/database';
-import { connectRedis } from './config/redis';
 
 const PORT = config.port || 3000;
 
 async function startServer() {
   try {
-    // Connect to database
-    await connectDatabase();
-    logger.info('Database connected successfully');
-
-    // Connect to Redis
-    await connectRedis();
-    logger.info('Redis connected successfully');
-
     // Start server
     const server = app.listen(PORT, () => {
       logger.info(`🚀 Server running on port ${PORT}`);
