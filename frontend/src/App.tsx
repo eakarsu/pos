@@ -14,6 +14,8 @@ import Inventory from './pages/Inventory';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import LandingPage from './pages/LandingPage';
+import Features from './pages/Features';
+import Pricing from './pages/Pricing';
 import { AuthProvider, useAuth } from './utils/AuthContext';
 import { SettingsProvider } from './utils/SettingsContext';
 
