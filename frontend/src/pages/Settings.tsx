@@ -522,7 +522,7 @@ const Settings: React.FC = () => {
   const [showLogsPage, setShowLogsPage] = useState(false);
   const [showBackupPage, setShowBackupPage] = useState(false);
   const [showExportPage, setShowExportPage] = useState(false);
-  const [systemLogs, setSystemLogs] = useState('');
+  const [systemLogs, setSystemLogs] = useState<any>(null);
   const [backupHistory, setBackupHistory] = useState<any[]>([]);
   const [exportHistory, setExportHistory] = useState<any[]>([]);
 
@@ -563,7 +563,7 @@ const Settings: React.FC = () => {
       setLoading(true);
       const result = await apiService.getSystemLogs(1000);
       if (result.success) {
-        setSystemLogs(result.data.logs);
+        setSystemLogs(result.data);
         setShowLogsPage(true);
       }
     } catch (error: any) {
@@ -955,8 +955,56 @@ const Settings: React.FC = () => {
                 </div>
                 
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                  <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm h-96 overflow-y-auto">
-                    <pre className="whitespace-pre-wrap">{systemLogs || 'No logs available'}</pre>
+                  <div className="mb-4 flex space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                      <span className="text-sm text-gray-600">INFO</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                      <span className="text-sm text-gray-600">WARN</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                      <span className="text-sm text-gray-600">ERROR</span>
+                    </div>
+                  </div>
+                  
+                  <div className="h-96 overflow-y-auto border border-gray-200 rounded-lg">
+                    {systemLogs && systemLogs.logEntries ? (
+                      <div className="divide-y divide-gray-100">
+                        {systemLogs.logEntries.map((entry: any, index: number) => (
+                          <div key={index} className="p-3 hover:bg-gray-50">
+                            <div className="flex items-start space-x-3">
+                              <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                                entry.level === 'ERROR' ? 'bg-red-500' :
+                                entry.level === 'WARN' ? 'bg-yellow-500' :
+                                'bg-blue-500'
+                              }`}></div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between">
+                                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                    entry.level === 'ERROR' ? 'bg-red-100 text-red-800' :
+                                    entry.level === 'WARN' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-blue-100 text-blue-800'
+                                  }`}>
+                                    {entry.level}
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    {new Date(entry.timestamp).toLocaleString()}
+                                  </span>
+                                </div>
+                                <p className="mt-1 text-sm text-gray-900">{entry.message}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm h-full overflow-y-auto">
+                        <pre className="whitespace-pre-wrap">{systemLogs || 'No logs available'}</pre>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
