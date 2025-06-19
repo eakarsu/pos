@@ -27,13 +27,18 @@ export async function setupTestDatabase() {
     await testPrisma.payment.deleteMany();
     await testPrisma.saleItem.deleteMany();
     await testPrisma.sale.deleteMany();
+    await testPrisma.returnItem.deleteMany();
+    await testPrisma.return.deleteMany();
     await testPrisma.loyaltyTransaction.deleteMany();
     await testPrisma.inventoryMovement.deleteMany();
     await testPrisma.inventoryItem.deleteMany();
+    await testPrisma.productVariant.deleteMany();
     await testPrisma.product.deleteMany();
     await testPrisma.customer.deleteMany();
     await testPrisma.supplier.deleteMany();
     await testPrisma.category.deleteMany();
+    await testPrisma.shift.deleteMany();
+    await testPrisma.auditLog.deleteMany();
     await testPrisma.user.deleteMany();
     await testPrisma.systemSetting.deleteMany();
     
@@ -174,6 +179,84 @@ export async function setupTestDatabase() {
     }
   });
 
+  // Create test sales
+  const sale1 = await testPrisma.sale.create({
+    data: {
+      saleNumber: 'SALE-TEST001',
+      customerId: customer.id,
+      userId: adminUser.id,
+      subtotal: 12.49,
+      taxAmount: 1.00,
+      discountAmount: 0,
+      totalAmount: 13.49,
+      status: 'COMPLETED',
+      paymentStatus: 'PAID',
+      items: {
+        create: [
+          {
+            productId: product1.id,
+            quantity: 2,
+            unitPrice: 3.50,
+            discount: 0,
+            taxRate: 8.0,
+            totalPrice: 7.56
+          },
+          {
+            productId: product2.id,
+            quantity: 1,
+            unitPrice: 8.99,
+            discount: 0,
+            taxRate: 8.0,
+            totalPrice: 9.71
+          }
+        ]
+      },
+      payments: {
+        create: [
+          {
+            amount: 13.49,
+            method: 'CASH',
+            status: 'PAID'
+          }
+        ]
+      }
+    }
+  });
+
+  const sale2 = await testPrisma.sale.create({
+    data: {
+      saleNumber: 'SALE-TEST002',
+      userId: cashierUser.id,
+      subtotal: 3.50,
+      taxAmount: 0.28,
+      discountAmount: 0,
+      totalAmount: 3.78,
+      status: 'COMPLETED',
+      paymentStatus: 'PAID',
+      items: {
+        create: [
+          {
+            productId: product1.id,
+            quantity: 1,
+            unitPrice: 3.50,
+            discount: 0,
+            taxRate: 8.0,
+            totalPrice: 3.78
+          }
+        ]
+      },
+      payments: {
+        create: [
+          {
+            amount: 3.78,
+            method: 'CREDIT_CARD',
+            status: 'PAID'
+          }
+        ]
+      }
+    }
+  });
+
   return {
     adminUser,
     cashierUser,
@@ -182,7 +265,9 @@ export async function setupTestDatabase() {
     supplier,
     product1,
     product2,
-    customer
+    customer,
+    sale1,
+    sale2
   };
 }
 
@@ -192,13 +277,18 @@ export async function cleanupTestDatabase() {
     await testPrisma.payment.deleteMany();
     await testPrisma.saleItem.deleteMany();
     await testPrisma.sale.deleteMany();
+    await testPrisma.returnItem.deleteMany();
+    await testPrisma.return.deleteMany();
     await testPrisma.loyaltyTransaction.deleteMany();
     await testPrisma.inventoryMovement.deleteMany();
     await testPrisma.inventoryItem.deleteMany();
+    await testPrisma.productVariant.deleteMany();
     await testPrisma.product.deleteMany();
     await testPrisma.customer.deleteMany();
     await testPrisma.supplier.deleteMany();
     await testPrisma.category.deleteMany();
+    await testPrisma.shift.deleteMany();
+    await testPrisma.auditLog.deleteMany();
     await testPrisma.user.deleteMany();
     await testPrisma.systemSetting.deleteMany();
   } catch (error) {
