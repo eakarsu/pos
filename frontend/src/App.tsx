@@ -55,6 +55,8 @@ const AppRoutes: React.FC = () => {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
+          <Route path="/features" element={<Features />} />
+          <Route path="/pricing" element={<Pricing />} />
           <Route path="/login" element={<Login />} />
           
           {/* Protected App Routes */}
@@ -82,7 +84,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/reports" element={<Navigate to="/app/reports" replace />} />
           <Route path="/settings" element={<Navigate to="/app/settings" replace />} />
           
-          <Route path="*" element={<Navigate to="/app/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <Toaster position="top-right" />
       </div>
