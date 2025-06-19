@@ -1,6 +1,12 @@
 import { Router } from 'express';
 import { config } from '../config/environment';
 
+// Import route modules
+import authRoutes from './auth';
+import productRoutes from './products';
+import salesRoutes from './sales';
+import customerRoutes from './customers';
+
 const router = Router();
 
 // API version prefix
@@ -35,11 +41,13 @@ router.get('/', (req, res) => {
   });
 });
 
-// TODO: Add route modules here
-// router.use(`${API_PREFIX}/auth`, authRoutes);
-// router.use(`${API_PREFIX}/products`, productRoutes);
-// router.use(`${API_PREFIX}/sales`, salesRoutes);
-// router.use(`${API_PREFIX}/customers`, customerRoutes);
+// Route modules
+router.use(`${API_PREFIX}/auth`, authRoutes);
+router.use(`${API_PREFIX}/products`, productRoutes);
+router.use(`${API_PREFIX}/sales`, salesRoutes);
+router.use(`${API_PREFIX}/customers`, customerRoutes);
+
+// TODO: Add remaining route modules
 // router.use(`${API_PREFIX}/inventory`, inventoryRoutes);
 // router.use(`${API_PREFIX}/reports`, reportRoutes);
 
