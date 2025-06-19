@@ -71,6 +71,8 @@ const AppRoutes: React.FC = () => {
   
   // Add global navigation listener
   useEffect(() => {
+    console.log('AppRoutes: useEffect running, current path:', window.location.pathname);
+    
     const originalPushState = history.pushState;
     const originalReplaceState = history.replaceState;
     
@@ -85,6 +87,13 @@ const AppRoutes: React.FC = () => {
       console.trace('NAVIGATION: replaceState stack trace');
       return originalReplaceState.apply(history, args);
     };
+    
+    // Check if we're on root and getting redirected
+    if (window.location.pathname === '/') {
+      console.log('AppRoutes: We are on root path, should show landing page');
+    } else {
+      console.log('AppRoutes: We are NOT on root path, current path:', window.location.pathname);
+    }
     
     return () => {
       history.pushState = originalPushState;
