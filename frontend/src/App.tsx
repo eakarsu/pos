@@ -16,6 +16,22 @@ import Settings from './pages/Settings';
 import LandingPage from './pages/LandingPage';
 import Features from './pages/Features';
 import Pricing from './pages/Pricing';
+import Resources from './pages/Resources';
+import Support from './pages/Support';
+import Solutions from './pages/Solutions';
+
+// Solution pages
+import Retail from './pages/solutions/Retail';
+import Restaurant from './pages/solutions/Restaurant';
+import Salon from './pages/solutions/Salon';
+import MultiLocation from './pages/solutions/MultiLocation';
+
+// Company pages
+import About from './pages/company/About';
+
+// Support pages
+import HelpCenter from './pages/support/HelpCenter';
+
 import { AuthProvider, useAuth } from './utils/AuthContext';
 import { SettingsProvider } from './utils/SettingsContext';
 
@@ -81,6 +97,34 @@ const AppRoutes: React.FC = () => {
           <Route path="/" element={<LandingPage />} />
           <Route path="/features" element={<Features />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/resources" element={<Resources />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="/solutions" element={<Solutions />} />
+          
+          {/* Solution pages */}
+          <Route path="/solutions/retail" element={<Retail />} />
+          <Route path="/solutions/restaurant" element={<Restaurant />} />
+          <Route path="/solutions/salon" element={<Salon />} />
+          <Route path="/solutions/multi-location" element={<MultiLocation />} />
+          
+          {/* Company pages */}
+          <Route path="/about" element={<About />} />
+          <Route path="/careers" element={<div className="p-8"><h1 className="text-2xl">Careers - Coming Soon</h1></div>} />
+          <Route path="/press" element={<div className="p-8"><h1 className="text-2xl">Press - Coming Soon</h1></div>} />
+          <Route path="/partners" element={<div className="p-8"><h1 className="text-2xl">Partners - Coming Soon</h1></div>} />
+          
+          {/* Support pages */}
+          <Route path="/help" element={<HelpCenter />} />
+          <Route path="/contact" element={<div className="p-8"><h1 className="text-2xl">Contact Us - Coming Soon</h1></div>} />
+          <Route path="/status" element={<div className="p-8"><h1 className="text-2xl">System Status - Coming Soon</h1></div>} />
+          <Route path="/community" element={<div className="p-8"><h1 className="text-2xl">Community - Coming Soon</h1></div>} />
+          
+          {/* Other pages */}
+          <Route path="/demo" element={<div className="p-8"><h1 className="text-2xl">Demo - Coming Soon</h1></div>} />
+          <Route path="/privacy" element={<div className="p-8"><h1 className="text-2xl">Privacy Policy - Coming Soon</h1></div>} />
+          <Route path="/terms" element={<div className="p-8"><h1 className="text-2xl">Terms of Service - Coming Soon</h1></div>} />
+          <Route path="/security" element={<div className="p-8"><h1 className="text-2xl">Security - Coming Soon</h1></div>} />
+          
           <Route path="/login" element={isLoading ? (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
               <div className="text-center">
