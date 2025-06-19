@@ -56,7 +56,10 @@ app.get('/health', (req, res) => {
 });
 
 // API routes
-app.use('/api', routes);
+app.use('/', routes);
+
+// Additional route for debugging
+app.use('/api/v1', routes);
 
 // Swagger documentation
 setupSwagger(app);
