@@ -9,7 +9,6 @@ import { config } from './config/environment';
 import { logger } from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
-import { rateLimiter } from './middleware/rateLimiter';
 import routes from './routes';
 import { setupSwagger } from './config/swagger';
 
@@ -34,8 +33,6 @@ app.use(cors({
 // Compression middleware
 app.use(compression());
 
-// Rate limiting
-app.use(rateLimiter);
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
