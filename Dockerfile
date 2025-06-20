@@ -24,11 +24,6 @@ RUN npx prisma generate
 # Build the application
 RUN npm run build
 
-# Run database migrations (will create SQLite file if using file DB)
-RUN npx prisma db push
-
-# Seed database with test data
-RUN npm run db:seed
 
 # Clean up dev dependencies to reduce image size
 RUN npm ci --omit=dev && npm cache clean --force
@@ -48,8 +43,11 @@ RUN chown -R nextjs:nodejs /app
 
 USER nextjs
 
-# Expose port
-EXPOSE 3000
+# Copy frontend source
+COPY frontend ./frontend
+
+# Expose ports for both backend and frontend
+EXPOSE 3000 5173
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
