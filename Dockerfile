@@ -1,7 +1,12 @@
-FROM node:18-alpine
+FROM node:18-slim
 
-# Install curl for health checks, openssl for Prisma, and net-tools for netstat
-RUN apk add --no-cache curl openssl openssl-dev net-tools
+# Install required packages for Prisma and the application
+RUN apt-get update && apt-get install -y \
+    curl \
+    openssl \
+    ca-certificates \
+    net-tools \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
@@ -18,11 +23,11 @@ COPY src ./src
 COPY prisma ./prisma
 COPY scripts ./scripts
 
-# Generate Prisma client
-RUN npx prisma generate
-
-# Build the application
+# Build the application first
 RUN npm run build
+
+# Generate Prisma client after build
+RUN npx prisma generate
 
 
 # Keep dev dependencies for tsx and other tools, just clean cache
@@ -38,8 +43,8 @@ COPY frontend ./frontend
 RUN chmod +x ./scripts/docker-start.sh ./scripts/start.sh
 
 # Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nextjs -u 1001
+RUN groupadd -g 1001 nodejs && \
+    useradd -r -u 1001 -g nodejs nextjs
 
 # Change ownership of app directory
 RUN chown -R nextjs:nodejs /app
