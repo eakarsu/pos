@@ -46,6 +46,11 @@ import Community from './pages/company/Community';
 import HelpCenter from './pages/support/HelpCenter';
 import SystemStatus from './pages/support/SystemStatus';
 
+// Legal pages
+import Privacy from './pages/legal/Privacy';
+import Terms from './pages/legal/Terms';
+import Security from './pages/legal/Security';
+
 import { AuthProvider, useAuth } from './utils/AuthContext';
 import { SettingsProvider } from './utils/SettingsContext';
 
@@ -140,11 +145,13 @@ const AppRoutes: React.FC = () => {
           <Route path="/help" element={<HelpCenter />} />
           <Route path="/status" element={<SystemStatus />} />
           
+          {/* Legal pages */}
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/security" element={<Security />} />
+          
           {/* Other pages */}
           <Route path="/demo" element={<div className="p-8"><h1 className="text-2xl">Demo - Coming Soon</h1></div>} />
-          <Route path="/privacy" element={<div className="p-8"><h1 className="text-2xl">Privacy Policy - Coming Soon</h1></div>} />
-          <Route path="/terms" element={<div className="p-8"><h1 className="text-2xl">Terms of Service - Coming Soon</h1></div>} />
-          <Route path="/security" element={<div className="p-8"><h1 className="text-2xl">Security - Coming Soon</h1></div>} />
           
           <Route path="/login" element={isLoading ? (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
