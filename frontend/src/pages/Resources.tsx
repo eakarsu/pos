@@ -43,7 +43,7 @@ const Resources: React.FC = () => {
             Resources & Learning Center
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Everything you need to succeed with our POS system. From documentation to training materials.
+            Everything you need to succeed with ElitePos. From documentation to training materials.
           </p>
         </div>
       </section>

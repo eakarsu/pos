@@ -45,7 +45,7 @@ const Footer: React.FC = () => {
         </div>
         <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <div className="text-gray-300">
-            © 2024 POS Pro. All rights reserved.
+            © 2024 ElitePos. All rights reserved.
           </div>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link to="/privacy" className="text-gray-300 hover:text-white transition-colors">Privacy</Link>

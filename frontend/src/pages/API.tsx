@@ -78,7 +78,7 @@ const API: React.FC = () => {
             Powerful API for Developers
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Build custom integrations and extend your POS system with our comprehensive REST API.
+            Build custom integrations and extend ElitePos with our comprehensive REST API.
             Access all your business data programmatically.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -106,7 +106,7 @@ const API: React.FC = () => {
               API Features
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Everything you need to build powerful integrations with our POS system.
+              Everything you need to build powerful integrations with ElitePos.
             </p>
           </div>
 
@@ -132,7 +132,7 @@ const API: React.FC = () => {
               API Endpoints
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Key endpoints to get you started with our API.
+              Key endpoints to get you started with the ElitePos API.
             </p>
           </div>
 

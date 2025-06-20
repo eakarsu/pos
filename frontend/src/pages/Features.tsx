@@ -231,7 +231,7 @@ const Features: React.FC = () => {
             Ready to Experience These Features?
           </h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Start your free trial today and see how our POS system can transform your business.
+            Start your free trial today and see how ElitePos can transform your business.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 

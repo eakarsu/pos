@@ -83,7 +83,7 @@ const Privacy: React.FC = () => {
           {/* Introduction */}
           <div className="prose prose-lg max-w-none mb-12">
             <p className="text-lg text-gray-700 leading-relaxed">
-              At POS Pro, we are committed to protecting your privacy and ensuring the security of your personal and business data. 
+              At ElitePos, we are committed to protecting your privacy and ensuring the security of your personal and business data. 
               This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our 
               point-of-sale software and related services.
             </p>
@@ -175,8 +175,8 @@ const Privacy: React.FC = () => {
               If you have any questions about this Privacy Policy or our data practices, please contact us:
             </p>
             <div className="space-y-2 text-gray-700">
-              <p>Email: privacy@pospro.com</p>
-              <p>Phone: 1-800-POS-HELP</p>
+              <p>Email: privacy@elitepos.chat</p>
+              <p>Phone: 1-800-ELITE-POS</p>
               <p>Address: 123 Business Ave, Suite 100, Tech City, TC 12345</p>
             </div>
             <div className="mt-6">

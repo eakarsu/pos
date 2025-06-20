@@ -88,7 +88,7 @@ const Integrations: React.FC = () => {
             Powerful Integrations
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Connect your POS system with the tools you already use. Streamline your workflow 
+            Connect ElitePos with the tools you already use. Streamline your workflow 
             with our extensive library of integrations.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -205,7 +205,7 @@ const Integrations: React.FC = () => {
           </h2>
           <p className="text-xl text-gray-600 mb-8">
             Don't see the integration you need? Our team can build custom integrations 
-            to connect your POS system with any third-party service.
+            to connect ElitePos with any third-party service.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 

@@ -130,7 +130,7 @@ const Pricing: React.FC = () => {
             Simple, Transparent Pricing
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Choose the plan that fits your business size and needs. All plans include a 30-day free trial.
+            Choose the plan that fits your business size and needs. All ElitePos plans include a 30-day free trial.
           </p>
           
           {/* Billing Toggle */}
@@ -311,7 +311,7 @@ const Pricing: React.FC = () => {
             Ready to Get Started?
           </h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Start your 30-day free trial today. No credit card required.
+            Start your 30-day ElitePos free trial today. No credit card required.
           </p>
           <Link 
             to="/app/dashboard" 

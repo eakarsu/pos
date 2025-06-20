@@ -139,7 +139,7 @@ const Security: React.FC = () => {
               Enterprise-Grade Security
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              We implement multiple layers of security to protect your business data, customer information, 
+              ElitePos implements multiple layers of security to protect your business data, customer information, 
               and payment transactions with industry-leading standards and practices.
             </p>
           </div>
@@ -270,9 +270,9 @@ const Security: React.FC = () => {
               Our security team is available to address any questions about our security practices or to receive security reports.
             </p>
             <div className="space-y-2 text-gray-700 mb-6">
-              <p>Security Team: security@pospro.com</p>
-              <p>Bug Bounty: security-reports@pospro.com</p>
-              <p>Emergency Hotline: 1-800-POS-SEC1</p>
+              <p>Security Team: security@elitepos.chat</p>
+              <p>Bug Bounty: security-reports@elitepos.chat</p>
+              <p>Emergency Hotline: 1-800-ELITE-SEC</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
@@ -282,7 +282,7 @@ const Security: React.FC = () => {
                 Contact Security Team
               </Link>
               <a 
-                href="mailto:security-reports@pospro.com"
+                href="mailto:security-reports@elitepos.chat"
                 className="border border-blue-600 text-blue-600 px-6 py-3 rounded-lg hover:bg-blue-50 transition-colors"
               >
                 Report Security Issue

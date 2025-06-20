@@ -83,7 +83,7 @@ const Terms: React.FC = () => {
           {/* Introduction */}
           <div className="prose prose-lg max-w-none mb-12">
             <p className="text-lg text-gray-700 leading-relaxed">
-              These Terms of Service ("Terms") govern your access to and use of POS Pro's software, services, and website. 
+              These Terms of Service ("Terms") govern your access to and use of ElitePos's software, services, and website. 
               By using our services, you agree to be bound by these Terms. If you don't agree to these Terms, 
               please don't use our services.
             </p>
@@ -173,7 +173,7 @@ const Terms: React.FC = () => {
             <div className="bg-gray-50 rounded-lg p-8">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Dispute Resolution</h2>
               <p className="text-gray-700 mb-4">
-                Resolution of disputes between you and POS Pro:
+                Resolution of disputes between you and ElitePos:
               </p>
               <ul className="space-y-2 text-gray-700">
                 <li>• Most disputes can be resolved through our customer support</li>
@@ -201,8 +201,8 @@ const Terms: React.FC = () => {
               If you have any questions about these Terms of Service, please contact our legal team:
             </p>
             <div className="space-y-2 text-gray-700">
-              <p>Email: legal@pospro.com</p>
-              <p>Phone: 1-800-POS-HELP</p>
+              <p>Email: legal@elitepos.chat</p>
+              <p>Phone: 1-800-ELITE-POS</p>
               <p>Address: 123 Business Ave, Suite 100, Tech City, TC 12345</p>
             </div>
             <div className="mt-6">
