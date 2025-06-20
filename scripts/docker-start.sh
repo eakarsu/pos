@@ -48,6 +48,13 @@ cd ..
 
 # Start backend server
 echo -e "\n${BLUE}🚀 Starting backend server...${NC}"
+NODE_ENV=production \
+PORT=3000 \
+DATABASE_URL="file:./data/pos.db" \
+JWT_SECRET="your-super-secret-jwt-key-change-this-in-production" \
+JWT_REFRESH_SECRET="your-super-secret-refresh-key-change-this-in-production" \
+CORS_ORIGIN="http://localhost:5173" \
+API_VERSION=1 \
 node dist/server.js &
 BACKEND_PID=$!
 
