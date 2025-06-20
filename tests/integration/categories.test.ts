@@ -6,7 +6,7 @@ describe('Categories Integration Tests', () => {
   let testData: any;
   let authToken: string;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     testData = await setupTestDatabase();
     
     const loginResponse = await request(app)

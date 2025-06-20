@@ -6,7 +6,7 @@ describe('Full POS Workflow Integration Tests', () => {
   let testData: any;
   let authToken: string;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     testData = await setupTestDatabase();
     
     // Get auth token
