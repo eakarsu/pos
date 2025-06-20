@@ -1,7 +1,7 @@
 FROM node:18-alpine
 
-# Install curl for health checks
-RUN apk add --no-cache curl
+# Install curl for health checks and openssl for Prisma
+RUN apk add --no-cache curl openssl
 
 # Set working directory
 WORKDIR /app
@@ -10,8 +10,8 @@ WORKDIR /app
 COPY package*.json ./
 COPY tsconfig.json ./
 
-# Install all dependencies
-RUN npm ci
+# Install all dependencies and tsx globally
+RUN npm ci && npm install -g tsx
 
 # Copy source code
 COPY src ./src
@@ -25,8 +25,8 @@ RUN npx prisma generate
 RUN npm run build
 
 
-# Clean up dev dependencies to reduce image size
-RUN npm ci --omit=dev && npm cache clean --force
+# Keep dev dependencies for tsx and other tools, just clean cache
+RUN npm cache clean --force
 
 # Create uploads directory
 RUN mkdir -p uploads
@@ -45,6 +45,18 @@ RUN addgroup -g 1001 -S nodejs && \
 RUN chown -R nextjs:nodejs /app
 
 USER nextjs
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV DATABASE_URL="file:./data/pos.db"
+ENV JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
+ENV JWT_REFRESH_SECRET="your-super-secret-refresh-key-change-this-in-production"
+ENV CORS_ORIGIN="http://localhost:5173"
+ENV API_VERSION=1
+
+# Create data directory for SQLite
+RUN mkdir -p data
 
 # Expose ports for both backend and frontend
 EXPOSE 3000 5173
