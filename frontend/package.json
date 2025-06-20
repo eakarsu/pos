@@ -21,7 +21,6 @@
     "date-fns": "^2.30.0",
     "qrcode.react": "^3.1.0",
     "react": "^18.2.0",
-    "react-barcode-reader": "^0.0.2",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.48.2",
     "react-hot-toast": "^2.5.2",

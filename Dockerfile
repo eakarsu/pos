@@ -38,12 +38,13 @@ COPY frontend ./frontend
 # Make start scripts executable (as root before switching users)
 RUN chmod +x ./scripts/docker-start.sh ./scripts/start.sh
 
-# Create non-root user
+# Create non-root user with home directory
 RUN groupadd -g 1001 nodejs && \
-    useradd -r -u 1001 -g nodejs nextjs
+    useradd -r -u 1001 -g nodejs -m -d /home/nextjs nextjs
 
-# Change ownership of app directory
-RUN chown -R nextjs:nodejs /app
+# Create npm cache directory and set permissions
+RUN mkdir -p /tmp/.npm /tmp/.npm-global && \
+    chown -R nextjs:nodejs /app /tmp/.npm /tmp/.npm-global
 
 USER nextjs
 
@@ -55,6 +56,9 @@ ENV JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
 ENV JWT_REFRESH_SECRET="your-super-secret-refresh-key-change-this-in-production"
 ENV CORS_ORIGIN="http://localhost:5173"
 ENV API_VERSION=1
+ENV npm_config_cache=/tmp/.npm
+ENV npm_config_prefix=/tmp/.npm-global
+ENV PATH="/tmp/.npm-global/bin:$PATH"
 
 # Create data directory for SQLite
 RUN mkdir -p data

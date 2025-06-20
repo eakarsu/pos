@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Colors for output
 RED='\033[0;31m'
@@ -15,6 +15,9 @@ export JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
 export JWT_REFRESH_SECRET="your-super-secret-refresh-key-change-this-in-production"
 export CORS_ORIGIN="http://localhost:5173"
 export API_VERSION=1
+export npm_config_cache=/tmp/.npm
+export npm_config_prefix=/tmp/.npm-global
+export PATH="/tmp/.npm-global/bin:$PATH"
 
 echo -e "${BLUE}🚀 POS System Docker Startup${NC}"
 echo "=================================="
@@ -44,14 +47,24 @@ else
     echo -e "${GREEN}✅ Database initialized${NC}"
 fi
 
-# Install frontend dependencies if not already installed
-echo -e "\n${BLUE}📦 Installing frontend dependencies...${NC}"
+# Clean and install frontend dependencies
+echo -e "\n${BLUE}📦 Setting up frontend dependencies...${NC}"
 cd frontend
-if [ ! -d "node_modules" ]; then
-    npm install
+
+# Clean any existing node_modules and lock files
+if [ -d "node_modules" ]; then
+    echo -e "${YELLOW}🧹 Cleaning existing node_modules...${NC}"
+    rm -rf node_modules package-lock.json
+fi
+
+# Install with proper npm configuration
+echo -e "${BLUE}📦 Installing frontend dependencies...${NC}"
+if npm install --no-optional --prefer-offline --loglevel=error; then
     echo -e "${GREEN}✅ Frontend dependencies installed${NC}"
 else
-    echo -e "${GREEN}✅ Frontend dependencies already installed${NC}"
+    echo -e "${RED}❌ Failed to install frontend dependencies${NC}"
+    cd ..
+    exit 1
 fi
 cd ..
 
@@ -83,19 +96,24 @@ fi
 # Start frontend server
 echo -e "\n${BLUE}🚀 Starting frontend server...${NC}"
 cd frontend
-npm run dev &
+
+# Start frontend with proper host binding for Docker
+echo -e "${BLUE}Starting Vite dev server...${NC}"
+npx vite --host 0.0.0.0 --port 5173 &
 FRONTEND_PID=$!
 cd ..
 
 # Wait for frontend to start
 echo -e "${YELLOW}⏳ Waiting for frontend to start...${NC}"
-sleep 5
+sleep 10
 
 # Check if frontend is running
 if port_in_use 5173; then
     echo -e "${GREEN}✅ Frontend server started on port 5173${NC}"
 else
     echo -e "${RED}❌ Frontend server failed to start${NC}"
+    echo -e "${YELLOW}📋 Checking for frontend process...${NC}"
+    ps aux | grep vite || true
     kill $BACKEND_PID 2>/dev/null
     kill $FRONTEND_PID 2>/dev/null
     exit 1
