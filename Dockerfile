@@ -1,7 +1,7 @@
 FROM node:18-alpine
 
-# Install curl for health checks and openssl for Prisma
-RUN apk add --no-cache curl openssl
+# Install curl for health checks, openssl for Prisma, and net-tools for netstat
+RUN apk add --no-cache curl openssl openssl-dev net-tools
 
 # Set working directory
 WORKDIR /app
@@ -11,7 +11,7 @@ COPY package*.json ./
 COPY tsconfig.json ./
 
 # Install all dependencies and tsx globally
-RUN npm ci && npm install -g tsx
+RUN npm ci && npm install -g tsx@latest
 
 # Copy source code
 COPY src ./src

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Colors for output
 RED='\033[0;31m'
@@ -7,12 +7,21 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Export environment variables explicitly
+export NODE_ENV=production
+export PORT=3000
+export DATABASE_URL="file:./data/pos.db"
+export JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
+export JWT_REFRESH_SECRET="your-super-secret-refresh-key-change-this-in-production"
+export CORS_ORIGIN="http://localhost:5173"
+export API_VERSION=1
+
 echo -e "${BLUE}🚀 POS System Docker Startup${NC}"
 echo "=================================="
 
 # Function to check if a port is in use
 port_in_use() {
-    lsof -i :$1 >/dev/null 2>&1
+    netstat -ln | grep ":$1 " >/dev/null 2>&1
 }
 
 # Check if database exists and is accessible
@@ -22,7 +31,7 @@ if npx prisma db push --accept-data-loss >/dev/null 2>&1; then
 else
     echo -e "${YELLOW}⚠️  Database not ready, initializing...${NC}"
     npx prisma db push --force-reset
-    npm run db:seed
+    npx tsx prisma/seed.ts
     echo -e "${GREEN}✅ Database initialized${NC}"
 fi
 
