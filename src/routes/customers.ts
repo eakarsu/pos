@@ -17,12 +17,12 @@ router.get('/', async (req, res, next) => {
 
     const where: any = {};
 
-    if (search) {
+    if (search && typeof search === 'string') {
       where.OR = [
-        { firstName: { contains: search as string, mode: 'insensitive' } },
-        { lastName: { contains: search as string, mode: 'insensitive' } },
-        { email: { contains: search as string, mode: 'insensitive' } },
-        { phone: { contains: search as string, mode: 'insensitive' } }
+        { firstName: { contains: search, mode: 'insensitive' } },
+        { lastName: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+        { phone: { contains: search, mode: 'insensitive' } }
       ];
     }
 
@@ -67,6 +67,7 @@ router.get('/', async (req, res, next) => {
       }
     });
   } catch (error) {
+    console.error('Error in GET /customers:', error);
     next(error);
   }
 });
