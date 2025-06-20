@@ -16,6 +16,8 @@ describe('Categories Integration Tests', () => {
         password: 'test123'
       });
     
+    expect(loginResponse.status).toBe(200);
+    expect(loginResponse.body.data.accessToken).toBeDefined();
     authToken = loginResponse.body.data.accessToken;
   });
 

@@ -144,7 +144,7 @@ describe('SettingsService Unit Tests', () => {
   let settingsService: SettingsService;
 
   beforeEach(async () => {
-    settingsService = new SettingsService(prisma);
+    settingsService = new SettingsService(testPrisma);
   });
 
   describe('getSetting', () => {
