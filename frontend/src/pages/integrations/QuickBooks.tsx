@@ -123,9 +123,12 @@ const QuickBooks: React.FC = () => {
           </div>
 
           <div className="mt-12 text-center">
-            <button className="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors mr-4">
+            <Link 
+              to="/app/settings?tab=integrations&integration=quickbooks"
+              className="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors mr-4 inline-block"
+            >
               Connect QuickBooks
-            </button>
+            </Link>
             <Link 
               to="/support" 
               className="border border-blue-600 text-blue-600 px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-50 transition-colors"

@@ -114,9 +114,12 @@ const IntegrationDetail: React.FC = () => {
               <p className="text-gray-600 mb-6">
                 Start streamlining your workflow with this powerful integration.
               </p>
-              <button className="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors mr-4">
+              <Link 
+                to={`/app/settings?tab=integrations&integration=${name}`}
+                className="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors mr-4 inline-block"
+              >
                 Enable Integration
-              </button>
+              </Link>
               <Link 
                 to="/support" 
                 className="border border-blue-600 text-blue-600 px-8 py-3 rounded-lg text-lg font-semibold hover:bg-blue-50 transition-colors"

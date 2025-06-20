@@ -92,12 +92,18 @@ const Integrations: React.FC = () => {
             with our extensive library of integrations.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors">
+            <Link 
+              to="/app/settings?tab=integrations"
+              className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors inline-block"
+            >
               Browse All Integrations
-            </button>
-            <button className="border border-blue-600 text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-50 transition-colors">
+            </Link>
+            <Link 
+              to="/contact?subject=custom-integration"
+              className="border border-blue-600 text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-50 transition-colors"
+            >
               Request Integration
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -202,12 +208,18 @@ const Integrations: React.FC = () => {
             to connect your POS system with any third-party service.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors">
+            <Link 
+              to="/contact?subject=custom-integration"
+              className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors inline-block"
+            >
               Request Custom Integration
-            </button>
-            <button className="border border-blue-600 text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-50 transition-colors">
+            </Link>
+            <Link 
+              to="/api"
+              className="border border-blue-600 text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-50 transition-colors"
+            >
               View API Documentation
-            </button>
+            </Link>
           </div>
         </div>
       </section>

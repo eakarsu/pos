@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { CodeBracketIcon, KeyIcon, DocumentTextIcon, CubeIcon } from '@heroicons/react/24/outline';
@@ -81,12 +82,18 @@ const API: React.FC = () => {
             Access all your business data programmatically.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors">
+            <Link 
+              to="/app/settings?tab=api"
+              className="bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors inline-block"
+            >
               Get API Key
-            </button>
-            <button className="border border-blue-600 text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-50 transition-colors">
+            </Link>
+            <Link 
+              to="/api#documentation"
+              className="border border-blue-600 text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-blue-50 transition-colors"
+            >
               View Documentation
-            </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -209,9 +216,12 @@ const API: React.FC = () => {
               <p className="text-gray-600 mb-4">
                 Check out our comprehensive API documentation for detailed examples and use cases.
               </p>
-              <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+              <Link 
+                to="/app/settings?tab=api"
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors inline-block"
+              >
                 View Full Documentation
-              </button>
+              </Link>
             </div>
           </div>
         </div>
