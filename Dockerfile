@@ -18,8 +18,8 @@ COPY prisma ./prisma
 # Generate Prisma client
 RUN npx prisma generate
 
-# Build the application
-RUN npm run build
+# Build the application (exclude prisma from compilation)
+RUN npx tsc --build tsconfig.json --excludeFiles "prisma/**/*" || npx tsc --outDir dist --rootDir src src/**/*.ts
 
 # Production stage
 FROM node:18-alpine AS production
