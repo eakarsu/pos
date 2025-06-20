@@ -1,180 +1,153 @@
-#!/bin/bash
+#!/bin/sh
 
-# Colors for output
+# --- Configuration ---
+BACKEND_PORT=3000
+FRONTEND_PORT=5173
+
+# --- Colors for beautiful output ---
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}🚀 POS System Startup Script${NC}"
+echo -e "${BLUE}🚀 POS System Smart Startup Script${NC}"
 echo "=================================="
 
-# Function to check if a command exists
+# --- Helper Functions ---
+# Checks for a command, silent on failure
 command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
-# Function to check if a port is in use
-port_in_use() {
-    lsof -i :$1 >/dev/null 2>&1
-}
-
-# Function to kill process on port
+# Kills processes using a specific port, using 'ss' or 'netstat' as lsof is not available
 kill_port() {
     local port=$1
-    local pid=$(lsof -ti :$port)
+    echo -e "${YELLOW}🔍 Searching for process on port $port...${NC}"
+    # Use ss, which is common in modern containers. Grep for the PID.
+    local pid=$(ss -ltnp "sport = :$port" 2>/dev/null | grep -oP 'pid=\K[0-9]+' | head -n 1)
+
+    if [ -z "$pid" ]; then
+        # Fallback to netstat if ss fails or doesn't find it
+        pid=$(netstat -tlnp 2>/dev/null | grep ":$port " | awk '{print $7}' | cut -d'/' -f1 | grep -v '-')
+    fi
+
     if [ ! -z "$pid" ]; then
-        echo -e "${YELLOW}⚠️  Killing existing process on port $port (PID: $pid)${NC}"
-        kill -9 $pid
-        sleep 2
+        echo -e "${YELLOW}⚠️ Killing existing process on port $port (PID: $pid)${NC}"
+        kill -9 "$pid"
+        # Wait for the OS to release the port
+        sleep 3
+    else
+        echo -e "${GREEN}✅ Port $port is free.${NC}"
     fi
 }
 
-# Check Node.js
-echo -e "\n${BLUE}📋 Checking requirements...${NC}"
-if command_exists node; then
-    NODE_VERSION=$(node --version)
-    echo -e "${GREEN}✅ Node.js: $NODE_VERSION${NC}"
+# --- Main Execution ---
+
+# 1. Environment and Requirement Checks
+echo -e "\n${BLUE}📋 Phase 1: Checking Environment...${NC}"
+if [ ! -f ".env" ]; then
+    echo -e "${RED}❌ .env file not found. Please create one from .env.example.${NC}"
+    exit 1
+fi
+echo -e "${GREEN}✅ .env file found.${NC}"
+echo -e "${GREEN}✅ Node.js: $(node --version)${NC}"
+echo -e "${GREEN}✅ npm: $(npm --version)${NC}"
+
+# 2. Prisma and Database Setup (Do this BEFORE installing dependencies)
+echo -e "\n${BLUE}🗄️ Phase 2: Setting up Database...${NC}"
+echo "   Generating Prisma Client..."
+if npx prisma generate; then
+    echo -e "${GREEN}✅ Prisma client generated successfully.${NC}"
 else
-    echo -e "${RED}❌ Node.js is not installed${NC}"
+    echo -e "${RED}❌ Failed to generate Prisma client.${NC}"
     exit 1
 fi
 
-# Check npm
-if command_exists npm; then
-    NPM_VERSION=$(npm --version)
-    echo -e "${GREEN}✅ npm: $NPM_VERSION${NC}"
+echo "   Checking database connectivity and schema..."
+if npx prisma db push --accept-data-loss; then
+    echo -e "${GREEN}✅ Database schema is up to date.${NC}"
 else
-    echo -e "${RED}❌ npm is not installed${NC}"
+    echo -e "${RED}❌ Could not connect to database or push schema.${NC}"
     exit 1
 fi
 
-# Check PostgreSQL
-if command_exists psql; then
-    echo -e "${GREEN}✅ PostgreSQL is available${NC}"
+# 3. Install Dependencies (Only if node_modules is missing)
+echo -e "\n${BLUE}📦 Phase 3: Installing Dependencies...${NC}"
+if [ ! -d "node_modules" ]; then
+    echo "   Backend node_modules not found. Installing..."
+    npm install
 else
-    echo -e "${YELLOW}⚠️  PostgreSQL command line tools not found${NC}"
-    echo -e "${YELLOW}   Make sure PostgreSQL is running on localhost:5432${NC}"
+    echo "   Backend node_modules already exists. Skipping install."
 fi
 
-# Check if .env file exists
-if [ -f ".env" ]; then
-    echo -e "${GREEN}✅ .env file found${NC}"
+if [ ! -d "frontend/node_modules" ]; then
+    echo "   Frontend node_modules not found. Installing..."
+    cd frontend && npm install && cd ..
 else
-    echo -e "${RED}❌ .env file not found${NC}"
-    echo -e "${YELLOW}   Creating .env file from .env.example...${NC}"
-    if [ -f ".env.example" ]; then
-        cp .env.example .env
-        echo -e "${GREEN}✅ .env file created${NC}"
-    else
-        echo -e "${RED}❌ .env.example not found${NC}"
-        exit 1
-    fi
+    echo "   Frontend node_modules already exists. Skipping install."
 fi
 
-# Check database connection
-echo -e "\n${BLUE}🗄️  Checking database connection...${NC}"
-if npm run db:generate >/dev/null 2>&1; then
-    echo -e "${GREEN}✅ Database connection successful${NC}"
-else
-    echo -e "${RED}❌ Database connection failed${NC}"
-    echo -e "${YELLOW}   Please ensure PostgreSQL is running and DATABASE_URL is correct${NC}"
-    exit 1
-fi
+# 4. Clean Up Old Processes
+echo -e "\n${BLUE}🧹 Phase 4: Cleaning Up Old Processes...${NC}"
+kill_port $BACKEND_PORT
+kill_port $FRONTEND_PORT
+pkill -f nodemon 2>/dev/null || true
+pkill -f vite 2>/dev/null || true
 
-# Install backend dependencies
-echo -e "\n${BLUE}📦 Installing backend dependencies...${NC}"
-if npm install; then
-    echo -e "${GREEN}✅ Backend dependencies installed${NC}"
-else
-    echo -e "${RED}❌ Failed to install backend dependencies${NC}"
-    exit 1
-fi
+# 5. Start Services
+echo -e "\n${BLUE}🚀 Phase 5: Starting Services...${NC}"
 
-# Install frontend dependencies
-echo -e "\n${BLUE}📦 Installing frontend dependencies...${NC}"
-cd frontend
-if npm install; then
-    echo -e "${GREEN}✅ Frontend dependencies installed${NC}"
-else
-    echo -e "${RED}❌ Failed to install frontend dependencies${NC}"
-    exit 1
-fi
-cd ..
-
-# Check and kill existing processes
-echo -e "\n${BLUE}🔍 Checking for existing processes...${NC}"
-if port_in_use 3000; then
-    kill_port 3000
-fi
-if port_in_use 5173; then
-    kill_port 5173
-fi
-
-# Start backend server
-echo -e "\n${BLUE}🚀 Starting backend server...${NC}"
+# Use 'npm start' for production/stability, 'npm run dev' for development.
+# For this script, we'll use 'dev' as per your setup.
+echo "   Starting backend server..."
 npm run dev &
 BACKEND_PID=$!
 
-# Wait for backend to start
-echo -e "${YELLOW}⏳ Waiting for backend to start...${NC}"
-sleep 5
+echo "   Waiting for backend to initialize (10 seconds)..."
+sleep 10
 
-# Check if backend is running
-if port_in_use 3000; then
-    echo -e "${GREEN}✅ Backend server started on port 3000${NC}"
-else
-    echo -e "${RED}❌ Backend server failed to start${NC}"
-    kill $BACKEND_PID 2>/dev/null
+if ! kill -0 $BACKEND_PID > /dev/null 2>&1; then
+    echo -e "${RED}❌ Backend server failed to start. Check logs for errors.${NC}"
     exit 1
 fi
+echo -e "${GREEN}✅ Backend process is running.${NC}"
 
-# Start frontend server
-echo -e "\n${BLUE}🚀 Starting frontend server...${NC}"
+
+echo "   Starting frontend server..."
 cd frontend
 npm run dev &
 FRONTEND_PID=$!
 cd ..
 
-# Wait for frontend to start
-echo -e "${YELLOW}⏳ Waiting for frontend to start...${NC}"
-sleep 5
+echo "   Waiting for frontend to initialize (10 seconds)..."
+sleep 10
 
-# Check if frontend is running
-if port_in_use 5173; then
-    echo -e "${GREEN}✅ Frontend server started on port 5173${NC}"
-else
-    echo -e "${RED}❌ Frontend server failed to start${NC}"
-    kill $BACKEND_PID 2>/dev/null
-    kill $FRONTEND_PID 2>/dev/null
+if ! kill -0 $FRONTEND_PID > /dev/null 2>&1; then
+    echo -e "${RED}❌ Frontend server failed to start. Check logs for errors.${NC}"
+    kill $BACKEND_PID
     exit 1
 fi
+echo -e "${GREEN}✅ Frontend process is running.${NC}"
 
+
+# --- Final Status ---
 echo -e "\n${GREEN}🎉 POS System started successfully!${NC}"
 echo "=================================="
-echo -e "${BLUE}📱 Frontend:${NC} http://localhost:5173"
-echo -e "${BLUE}🔧 Backend API:${NC} http://localhost:3000"
-echo -e "${BLUE}📚 API Docs:${NC} http://localhost:3000/api-docs"
-echo -e "${BLUE}🏥 Health Check:${NC} http://localhost:3000/health"
+echo -e "${BLUE}📱 Frontend available at:${NC} http://localhost:${FRONTEND_PORT}"
+echo -e "${BLUE}🔧 Backend API available at:${NC} http://localhost:${BACKEND_PORT}"
 echo ""
-echo -e "${YELLOW}📋 Default Login Credentials:${NC}"
-echo -e "   Email: admin@pos.com"
-echo -e "   Password: admin123"
-echo ""
-echo -e "${YELLOW}⚠️  Press Ctrl+C to stop all servers${NC}"
+echo -e "${YELLOW}⚠️ Press Ctrl+C to stop all servers.${NC}"
 
-# Function to cleanup on exit
+# --- Cleanup on Exit ---
 cleanup() {
-    echo -e "\n${YELLOW}🛑 Shutting down servers...${NC}"
+    echo -e "\n\n${YELLOW}🛑 Shutting down all services...${NC}"
     kill $BACKEND_PID 2>/dev/null
     kill $FRONTEND_PID 2>/dev/null
-    echo -e "${GREEN}✅ Servers stopped${NC}"
+    echo -e "${GREEN}✅ Done.${NC}"
     exit 0
 }
 
-# Trap Ctrl+C
 trap cleanup INT
-
-# Wait for user to stop
 wait
+

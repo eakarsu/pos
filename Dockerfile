@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     net-tools \
     && rm -rf /var/lib/apt/lists/*
 
+RUN npm install -g nodemon tsx vite
 # Set working directory
 WORKDIR /app
 
@@ -22,6 +23,7 @@ RUN npm ci && npm install -g tsx@latest
 COPY src ./src
 COPY prisma ./prisma
 COPY scripts ./scripts
+COPY .env .
 
 # Build the application first
 RUN npm run build
@@ -34,34 +36,16 @@ RUN mkdir -p uploads
 
 # Copy frontend source
 COPY frontend ./frontend
+WORKDIR /app/frontend
+RUN npm install
+
+# Go back to app root and copy all source
+WORKDIR /app
+
 
 # Make start scripts executable (as root before switching users)
 RUN chmod +x ./scripts/docker-start.sh ./scripts/start.sh
 
-# Create non-root user with home directory
-RUN groupadd -g 1001 nodejs && \
-    useradd -r -u 1001 -g nodejs -m -d /home/nextjs nextjs
-
-# Create npm cache directory and set permissions
-RUN mkdir -p /tmp/.npm /tmp/.npm-global && \
-    chown -R nextjs:nodejs /app /tmp/.npm /tmp/.npm-global
-
-USER nextjs
-
-# Set environment variables
-ENV NODE_ENV=production
-ENV PORT=3000
-ENV DATABASE_URL="file:./data/pos.db"
-ENV JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
-ENV JWT_REFRESH_SECRET="your-super-secret-refresh-key-change-this-in-production"
-ENV CORS_ORIGIN="http://localhost:5173"
-ENV API_VERSION=1
-ENV npm_config_cache=/tmp/.npm
-ENV npm_config_prefix=/tmp/.npm-global
-ENV PATH="/tmp/.npm-global/bin:$PATH"
-
-# Create data directory for SQLite
-RUN mkdir -p data
 
 # Expose ports for both backend and frontend
 EXPOSE 3000 5173
