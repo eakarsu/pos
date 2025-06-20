@@ -1,7 +1,7 @@
 {
-  "name": "pos-system-backend",
+  "name": "elitepos-backend",
   "version": "1.0.0",
-  "description": "Comprehensive Point of Sale System Backend",
+  "description": "ElitePos - Comprehensive Point of Sale System Backend",
   "main": "dist/server.js",
   "scripts": {
     "dev": "nodemon --exec tsx src/server.ts",
@@ -30,7 +30,7 @@
     "inventory",
     "sales"
   ],
-  "author": "POS System Team",
+  "author": "ElitePos Team",
   "license": "MIT",
   "dependencies": {
     "@prisma/client": "^5.7.1",
