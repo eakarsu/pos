@@ -24,14 +24,20 @@ RUN npx prisma generate
 # Build the application
 RUN npm run build
 
+# Run database migrations (will create SQLite file if using file DB)
+RUN npx prisma db push
+
+# Seed database with test data
+RUN npm run db:seed
+
 # Clean up dev dependencies to reduce image size
 RUN npm ci --omit=dev && npm cache clean --force
 
 # Create uploads directory
 RUN mkdir -p uploads
 
-# Make the start script executable
-RUN chmod +x ./scripts/start.sh
+# Copy and make start scripts executable
+RUN chmod +x ./scripts/start.sh ./scripts/docker-start.sh
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
@@ -50,5 +56,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:3000/health || exit 1
 
 # Start the application
-CMD ["./scripts/start.sh"]
+CMD ["./scripts/docker-start.sh"]
 
