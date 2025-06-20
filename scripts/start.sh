@@ -20,16 +20,21 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
-# Kills processes using a specific port, using 'ss' or 'netstat' as lsof is not available
+# Kills processes using a specific port, using portable commands
 kill_port() {
     local port=$1
+    local pid=""
     echo -e "${YELLOW}🔍 Searching for process on port $port...${NC}"
-    # Use ss, which is common in modern containers. Grep for the PID.
-    local pid=$(ss -ltnp "sport = :$port" 2>/dev/null | grep -oP 'pid=\K[0-9]+' | head -n 1)
 
-    if [ -z "$pid" ]; then
-        # Fallback to netstat if ss fails or doesn't find it
-        pid=$(netstat -tlnp 2>/dev/null | grep ":$port " | awk '{print $7}' | cut -d'/' -f1 | grep -v '-')
+    # Try with 'ss' first (common on modern Linux)
+    if command_exists ss; then
+        pid=$(ss -ltnp "sport = :$port" 2>/dev/null | sed 's/.*pid=\([0-9]*\).*/\1/' | head -n 1)
+    fi
+
+    # Fallback to 'netstat' if 'ss' fails or doesn't find a PID
+    # This is more common on older systems and macOS
+    if [ -z "$pid" ] && command_exists netstat; then
+        pid=$(netstat -anp 2>/dev/null | grep "\.$port\s" | grep 'LISTEN' | awk '{print $NF}' | cut -d'/' -f1 | grep -E '^[0-9]+$')
     fi
 
     if [ ! -z "$pid" ]; then
@@ -54,7 +59,7 @@ echo -e "${GREEN}✅ .env file found.${NC}"
 echo -e "${GREEN}✅ Node.js: $(node --version)${NC}"
 echo -e "${GREEN}✅ npm: $(npm --version)${NC}"
 
-# 2. Prisma and Database Setup (Do this BEFORE installing dependencies)
+# 2. Prisma and Database Setup
 echo -e "\n${BLUE}🗄️ Phase 2: Setting up Database...${NC}"
 echo "   Generating Prisma Client..."
 if npx prisma generate; then
@@ -63,7 +68,6 @@ else
     echo -e "${RED}❌ Failed to generate Prisma client.${NC}"
     exit 1
 fi
-
 echo "   Checking database connectivity and schema..."
 if npx prisma db push --accept-data-loss; then
     echo -e "${GREEN}✅ Database schema is up to date.${NC}"
@@ -80,7 +84,6 @@ if [ ! -d "node_modules" ]; then
 else
     echo "   Backend node_modules already exists. Skipping install."
 fi
-
 if [ ! -d "frontend/node_modules" ]; then
     echo "   Frontend node_modules not found. Installing..."
     cd frontend && npm install && cd ..
@@ -97,39 +100,30 @@ pkill -f vite 2>/dev/null || true
 
 # 5. Start Services
 echo -e "\n${BLUE}🚀 Phase 5: Starting Services...${NC}"
-
-# Use 'npm start' for production/stability, 'npm run dev' for development.
-# For this script, we'll use 'dev' as per your setup.
 echo "   Starting backend server..."
 npm run dev &
 BACKEND_PID=$!
-
 echo "   Waiting for backend to initialize (10 seconds)..."
 sleep 10
-
 if ! kill -0 $BACKEND_PID > /dev/null 2>&1; then
     echo -e "${RED}❌ Backend server failed to start. Check logs for errors.${NC}"
     exit 1
 fi
 echo -e "${GREEN}✅ Backend process is running.${NC}"
 
-
 echo "   Starting frontend server..."
 cd frontend
 npm run dev &
 FRONTEND_PID=$!
 cd ..
-
 echo "   Waiting for frontend to initialize (10 seconds)..."
 sleep 10
-
 if ! kill -0 $FRONTEND_PID > /dev/null 2>&1; then
     echo -e "${RED}❌ Frontend server failed to start. Check logs for errors.${NC}"
     kill $BACKEND_PID
     exit 1
 fi
 echo -e "${GREEN}✅ Frontend process is running.${NC}"
-
 
 # --- Final Status ---
 echo -e "\n${GREEN}🎉 POS System started successfully!${NC}"
