@@ -12,7 +12,7 @@ const Terms: React.FC = () => {
       title: "Service Description",
       icon: DocumentTextIcon,
       content: [
-        "POS Pro provides cloud-based point-of-sale software and related services",
+        "ElitePos provides cloud-based point-of-sale software and related services",
         "Features include transaction processing, inventory management, and reporting",
         "Services are provided on a subscription basis with various plan options",
         "We reserve the right to modify or discontinue features with notice",
@@ -133,7 +133,7 @@ const Terms: React.FC = () => {
                 Ownership and licensing of intellectual property:
               </p>
               <ul className="space-y-2 text-gray-700">
-                <li>• POS Pro retains all rights to our software, trademarks, and content</li>
+                <li>• ElitePos retains all rights to our software, trademarks, and content</li>
                 <li>• You retain ownership of your business data and customer information</li>
                 <li>• You grant us a license to process your data to provide our services</li>
                 <li>• You may not copy, modify, or distribute our software</li>
