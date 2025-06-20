@@ -26,10 +26,6 @@ COPY scripts ./scripts
 # Build the application first
 RUN npm run build
 
-# Generate Prisma client after build
-RUN npx prisma generate
-
-
 # Keep dev dependencies for tsx and other tools, just clean cache
 RUN npm cache clean --force
 

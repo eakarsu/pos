@@ -24,6 +24,15 @@ port_in_use() {
     netstat -ln | grep ":$1 " >/dev/null 2>&1
 }
 
+# Generate Prisma client first (at runtime to avoid build issues)
+echo -e "\n${BLUE}🔧 Generating Prisma client...${NC}"
+if npx prisma generate >/dev/null 2>&1; then
+    echo -e "${GREEN}✅ Prisma client generated${NC}"
+else
+    echo -e "${RED}❌ Failed to generate Prisma client${NC}"
+    exit 1
+fi
+
 # Check if database exists and is accessible
 echo -e "\n${BLUE}🗄️  Checking database...${NC}"
 if npx prisma db push --accept-data-loss >/dev/null 2>&1; then
