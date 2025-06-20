@@ -31,11 +31,10 @@ RUN npm ci --omit=dev && npm cache clean --force
 # Create uploads directory
 RUN mkdir -p uploads
 
-
 # Copy frontend source
 COPY frontend ./frontend
 
-# Make start scripts executable (before switching to non-root user)
+# Make start scripts executable (as root before switching users)
 RUN chmod +x ./scripts/docker-start.sh ./scripts/start.sh
 
 # Create non-root user
