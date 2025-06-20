@@ -1,0 +1,210 @@
+You are an expert full-stack web developer tasked with completing a fully functional POS system website. The core POS functionality already exists and works properly. Your goal is to create a complete, professional website with all navigation links functional, no missing pages, and an excellent user experience.
+
+## PROJECT OVERVIEW
+Transform the existing functional POS system into a complete business website with:
+- Professional landing pages and marketing content
+- Complete navigation structure with all working links
+- User-friendly interface for different user types
+- Comprehensive documentation and support pages
+- Mobile-responsive design throughout
+
+## CURRENT STATE ANALYSIS
+The existing POS system includes:
+- Functional POS transaction processing
+- User authentication and role management
+- Inventory management capabilities
+- Payment processing integration
+- Basic dashboard functionality
+
+## REQUIRED WEBSITE COMPLETION TASKS
+
+### 1. Header Navigation Structure
+Create a complete header with these functional sections:
+- **Home** - Landing page with value proposition
+- **Features** - Detailed feature showcase
+- **Pricing** - Pricing plans and packages
+- **Solutions** - Industry-specific solutions
+- **Resources** - Documentation, guides, tutorials
+- **Support** - Help center, contact, FAQ
+- **Login/Dashboard** - User authentication portal
+- **Get Started** - Sign-up and onboarding flow
+
+### 2. Footer Navigation Structure
+Implement comprehensive footer with these sections:
+- **Product Links**: Features, Pricing, Integrations, API Documentation
+- **Solutions**: Retail, Restaurant, Salon/Spa, Multi-location
+- **Resources**: Blog, Case Studies, Webinars, Downloads
+- **Support**: Help Center, Contact Us, System Status, Community
+- **Company**: About Us, Careers, Press, Partners
+- **Legal**: Privacy Policy, Terms of Service, Security, Compliance
+- **Social Media**: LinkedIn, Twitter, Facebook, YouTube icons with links
+
+### 3. Landing Page Content
+Create an engaging homepage with:
+- **Hero Section**: Compelling headline, value proposition, CTA button
+- **Feature Highlights**: 6-8 key POS features with icons and descriptions
+- **Social Proof**: Customer testimonials, logos, statistics
+- **Demo Section**: Interactive demo or video walkthrough
+- **Industry Solutions**: Cards for different business types
+- **Pricing Preview**: Basic pricing information with "See All Plans" CTA
+- **Trust Signals**: Security badges, certifications, guarantees
+
+### 4. Feature Pages
+Develop detailed feature pages:
+- **Sales Management**: Transaction processing, multiple payment methods
+- **Inventory Control**: Stock tracking, low stock alerts, reporting
+- **Customer Management**: Profiles, loyalty programs, purchase history
+- **Reporting & Analytics**: Sales reports, performance metrics, insights
+- **Multi-location Support**: Centralized management, location-specific data
+- **Integrations**: Third-party app connections, API capabilities
+- **Mobile POS**: Tablet/phone functionality, offline capabilities
+- **Security**: Data protection, PCI compliance, user permissions
+
+### 5. Pricing & Plans Pages
+Create comprehensive pricing structure:
+- **Starter Plan**: Basic POS features for small businesses
+- **Professional Plan**: Advanced features for growing businesses
+- **Enterprise Plan**: Full feature set for large operations
+- **Custom Solutions**: Enterprise-specific requirements
+- **Add-ons**: Additional modules, integrations, support levels
+- **Free Trial**: 30-day trial signup with feature access
+- **Pricing Calculator**: Interactive tool for custom quotes
+
+### 6. Support & Documentation
+Build complete support ecosystem:
+- **Help Center**: Searchable knowledge base with categories
+- **Getting Started Guide**: Step-by-step setup instructions
+- **User Manual**: Comprehensive feature documentation
+- **Video Tutorials**: Screen recordings for key workflows
+- **API Documentation**: Developer resources and examples
+- **FAQ Section**: Common questions and answers
+- **Contact Support**: Multiple contact methods (chat, email, phone)
+- **System Status**: Real-time service status and updates
+
+### 7. Company & Legal Pages
+Implement required business pages:
+- **About Us**: Company story, mission, team profiles
+- **Careers**: Job openings, company culture, benefits
+- **Press Kit**: Media resources, press releases, brand assets
+- **Partners**: Integration partners, reseller program
+- **Privacy Policy**: Data handling, GDPR compliance
+- **Terms of Service**: Usage terms, service agreements
+- **Security**: Security measures, certifications, compliance
+- **Cookie Policy**: Cookie usage and preferences
+
+### 8. User Onboarding Flow
+Create seamless signup and onboarding:
+- **Sign-up Form**: Business information collection
+- **Account Verification**: Email verification process
+- **Setup Wizard**: Guided initial configuration
+- **Sample Data**: Pre-populated demo data for testing
+- **Training Resources**: Quick start guides and tutorials
+- **Success Metrics**: Onboarding completion tracking
+
+## TECHNICAL REQUIREMENTS
+
+### Responsive Design
+- Mobile-first approach with breakpoints for tablet and desktop
+- Touch-friendly interface elements for mobile POS usage
+- Consistent design system across all pages
+- Fast loading times (< 3 seconds on mobile)
+
+### SEO Optimization
+- Semantic HTML structure with proper heading hierarchy
+- Meta descriptions and title tags for all pages
+- Open Graph and Twitter Card meta tags
+- XML sitemap generation
+- Schema markup for business information
+
+### Performance Optimization
+- Image optimization and lazy loading
+- CSS and JavaScript minification
+- CDN integration for static assets
+- Caching strategies for dynamic content
+- Progressive Web App (PWA) capabilities
+
+### Accessibility Compliance
+- WCAG 2.1 AA compliance
+- Keyboard navigation support
+- Screen reader compatibility
+- High contrast mode support
+- Alternative text for all images
+
+## CONTENT STRATEGY
+
+### Messaging Framework
+- **Primary Value Prop**: "Complete POS solution that grows with your business"
+- **Key Benefits**: Easy to use, reliable, comprehensive features, great support
+- **Target Audience**: Small to medium businesses, retail, restaurants, service providers
+- **Competitive Advantages**: All-in-one solution, affordable pricing, excellent support
+
+### Content Types
+- **Educational Content**: How-to guides, best practices, industry insights
+- **Product Content**: Feature explanations, use cases, comparisons
+- **Social Proof**: Customer stories, case studies, reviews
+- **Support Content**: Troubleshooting, FAQs, video tutorials
+
+## IMPLEMENTATION PHASES
+
+### Phase 1: Core Navigation (Week 1)
+1. Implement complete header and footer navigation
+2. Create basic page templates for all navigation items
+3. Ensure all links are functional (no 404 errors)
+4. Implement responsive navigation menu
+
+### Phase 2: Content Pages (Week 2-3)
+1. Develop homepage with compelling content
+2. Create detailed feature pages
+3. Build pricing and plans pages
+4. Implement company and legal pages
+
+### Phase 3: Support System (Week 4)
+1. Build help center and documentation
+2. Create user onboarding flow
+3. Implement contact and support systems
+4. Add search functionality
+
+### Phase 4: Optimization (Week 5)
+1. SEO optimization and meta tags
+2. Performance optimization
+3. Accessibility compliance
+4. Cross-browser testing
+
+
+### Design System
+- **Color Palette**: Professional blue/gray scheme with accent colors
+- **Typography**: Clean, readable fonts (Inter, Roboto, or similar)
+- **Icons**: Consistent icon library (Feather, Heroicons, or similar)
+- **Components**: Reusable UI components for consistency
+- **Spacing**: Consistent spacing scale (8px grid system)
+
+### Content Management
+- **CMS Integration**: Consider headless CMS for content management
+- **Blog System**: WordPress or similar for content marketing
+- **Form Handling**: Contact forms with proper validation
+- **Analytics**: Google Analytics and conversion tracking
+
+## SUCCESS CRITERIA
+- All header and footer links are functional
+- No 404 errors or missing pages
+- Mobile-responsive design across all pages
+- Fast loading times (< 3 seconds)
+- Professional, cohesive design
+- Clear user journey from landing to signup
+- Comprehensive support documentation
+- SEO-optimized content structure
+
+## DELIVERABLES
+1. Complete website with all functional navigation
+2. Responsive design across all devices
+3. Professional content for all pages
+4. User onboarding and support systems
+5. SEO optimization and meta tags
+6. Performance optimization
+7. Documentation for content updates
+8. Analytics and tracking implementation
+
+Start by auditing the existing POS system to understand current functionality, then implement the header and footer navigation structure. Focus on creating a cohesive user experience that guides visitors from initial interest to successful POS system adoption.
+
+Ensure every link works, every page serves a purpose, and the overall website reflects the quality and professionalism of the POS system itself.
+
