@@ -19,6 +19,8 @@ import Pricing from './pages/Pricing';
 import Resources from './pages/Resources';
 import Support from './pages/Support';
 import Solutions from './pages/Solutions';
+import Integrations from './pages/Integrations';
+import API from './pages/API';
 
 // Solution pages
 import Retail from './pages/solutions/Retail';
@@ -106,6 +108,8 @@ const AppRoutes: React.FC = () => {
           <Route path="/resources" element={<Resources />} />
           <Route path="/support" element={<Support />} />
           <Route path="/solutions" element={<Solutions />} />
+          <Route path="/integrations" element={<Integrations />} />
+          <Route path="/api" element={<API />} />
           
           {/* Solution pages */}
           <Route path="/solutions/retail" element={<Retail />} />
