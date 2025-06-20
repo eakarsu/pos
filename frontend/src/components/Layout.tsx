@@ -34,7 +34,7 @@ const Layout: React.FC = () => {
       {/* Sidebar */}
       <div className="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg">
         <div className="flex h-16 items-center justify-center border-b border-gray-200">
-          <h1 className="text-xl font-bold text-gray-900">POS System</h1>
+          <h1 className="text-xl font-bold text-gray-900">ElitePos</h1>
         </div>
         
         <nav className="mt-8 px-4">

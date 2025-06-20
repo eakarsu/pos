@@ -1,7 +1,7 @@
 {
-  "name": "pos-system-frontend",
+  "name": "elitepos-frontend",
   "version": "1.0.0",
-  "description": "POS System Frontend - React TypeScript Application",
+  "description": "ElitePos Frontend - React TypeScript Application",
   "private": true,
   "type": "module",
   "scripts": {

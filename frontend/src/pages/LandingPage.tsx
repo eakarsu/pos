@@ -83,7 +83,7 @@ const LandingPage: React.FC = () => {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <h1 className="text-2xl font-bold text-blue-600">POS Pro</h1>
+                <h1 className="text-2xl font-bold text-blue-600">ElitePos</h1>
               </div>
             </div>
             <nav className="hidden md:flex space-x-8">
@@ -278,7 +278,7 @@ const LandingPage: React.FC = () => {
           </div>
           <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
             <div className="text-gray-300">
-              © 2024 POS Pro. All rights reserved.
+              © 2024 ElitePos. All rights reserved.
             </div>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <Link to="/privacy" className="text-gray-300 hover:text-white transition-colors">Privacy</Link>
