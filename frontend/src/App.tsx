@@ -22,6 +22,12 @@ import Solutions from './pages/Solutions';
 import Integrations from './pages/Integrations';
 import API from './pages/API';
 
+// Integration detail pages
+import Stripe from './pages/integrations/Stripe';
+import QuickBooks from './pages/integrations/QuickBooks';
+import Shopify from './pages/integrations/Shopify';
+import IntegrationDetail from './pages/integrations/IntegrationDetail';
+
 // Solution pages
 import Retail from './pages/solutions/Retail';
 import Restaurant from './pages/solutions/Restaurant';
@@ -109,6 +115,11 @@ const AppRoutes: React.FC = () => {
           <Route path="/support" element={<Support />} />
           <Route path="/solutions" element={<Solutions />} />
           <Route path="/integrations" element={<Integrations />} />
+          <Route path="/integrations/stripe" element={<Stripe />} />
+          <Route path="/integrations/quickbooks" element={<QuickBooks />} />
+          <Route path="/integrations/shopify" element={<Shopify />} />
+          {/* Generic integration detail page for other integrations */}
+          <Route path="/integrations/:name" element={<IntegrationDetail />} />
           <Route path="/api" element={<API />} />
           
           {/* Solution pages */}
