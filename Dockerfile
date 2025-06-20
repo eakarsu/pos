@@ -32,6 +32,12 @@ RUN npm ci --omit=dev && npm cache clean --force
 RUN mkdir -p uploads
 
 
+# Copy frontend source
+COPY frontend ./frontend
+
+# Make start scripts executable (before switching to non-root user)
+RUN chmod +x ./scripts/docker-start.sh ./scripts/start.sh
+
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nextjs -u 1001
@@ -40,12 +46,6 @@ RUN addgroup -g 1001 -S nodejs && \
 RUN chown -R nextjs:nodejs /app
 
 USER nextjs
-
-# Copy frontend source
-COPY frontend ./frontend
-
-# Make start scripts executable (after all files are copied)
-RUN chmod +x ./scripts/docker-start.sh ./scripts/start.sh
 
 # Expose ports for both backend and frontend
 EXPOSE 3000 5173
