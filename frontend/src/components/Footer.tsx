@@ -43,14 +43,36 @@ const Footer: React.FC = () => {
             </ul>
           </div>
         </div>
-        <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <div className="text-gray-300">
-            © 2024 ElitePos. All rights reserved.
+        <div className="border-t border-gray-800 mt-12 pt-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div>
+              <h4 className="text-lg font-semibold mb-4 text-white">Contact Information</h4>
+              <div className="space-y-2 text-gray-300">
+                <p>Email: <a href="mailto:support@elitepos.chat" className="text-blue-400 hover:text-blue-300">support@elitepos.chat</a></p>
+                <p>Sales: <a href="mailto:sales@elitepos.chat" className="text-blue-400 hover:text-blue-300">sales@elitepos.chat</a></p>
+                <p>Phone: <a href="tel:+18043601129" className="text-blue-400 hover:text-blue-300">1-804-360-1129</a></p>
+                <p>Address: 2807 Hampton Woods Drive<br />Henrico, VA 23233</p>
+              </div>
+            </div>
+            <div>
+              <h4 className="text-lg font-semibold mb-4 text-white">Get in Touch</h4>
+              <Link 
+                to="/contact" 
+                className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors"
+              >
+                Send Message
+              </Link>
+            </div>
           </div>
-          <div className="flex space-x-6 mt-4 md:mt-0">
-            <Link to="/privacy" className="text-gray-300 hover:text-white transition-colors">Privacy</Link>
-            <Link to="/terms" className="text-gray-300 hover:text-white transition-colors">Terms</Link>
-            <Link to="/security" className="text-gray-300 hover:text-white transition-colors">Security</Link>
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="text-gray-300">
+              © 2024 ElitePos. All rights reserved.
+            </div>
+            <div className="flex space-x-6 mt-4 md:mt-0">
+              <Link to="/privacy" className="text-gray-300 hover:text-white transition-colors">Privacy</Link>
+              <Link to="/terms" className="text-gray-300 hover:text-white transition-colors">Terms</Link>
+              <Link to="/security" className="text-gray-300 hover:text-white transition-colors">Security</Link>
+            </div>
           </div>
         </div>
       </div>
