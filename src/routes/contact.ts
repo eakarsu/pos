@@ -21,11 +21,16 @@ const createTransporter = () => {
     connectionTimeout: 10000, // 10 seconds
     greetingTimeout: 5000, // 5 seconds
     socketTimeout: 10000, // 10 seconds
-    // Additional options for better compatibility
-    requireTLS: true,
+    // Additional options for better compatibility with Hostinger
+    requireTLS: port !== 465,
     tls: {
-      rejectUnauthorized: false // Allow self-signed certificates
-    }
+      rejectUnauthorized: false, // Allow self-signed certificates
+      ciphers: 'SSLv3'
+    },
+    // Try different authentication methods
+    authMethod: 'PLAIN',
+    debug: process.env.NODE_ENV === 'development',
+    logger: process.env.NODE_ENV === 'development'
   };
   
   logger.info(`Creating SMTP transporter with config: ${JSON.stringify({
@@ -33,8 +38,8 @@ const createTransporter = () => {
     port: config.port,
     secure: config.secure,
     user: config.auth.user,
-    // Don't log the password
-    hasPassword: !!config.auth.pass
+    hasPassword: !!config.auth.pass,
+    passwordLength: config.auth.pass?.length || 0
   })}`);
   
   return nodemailer.createTransport(config);
@@ -123,10 +128,89 @@ Time: ${new Date().toISOString()}
       // Create transporter
       const transporter = createTransporter();
 
-      // Verify transporter configuration
+      // Test different approaches if verification fails
       logger.info('Verifying SMTP transporter...');
-      await transporter.verify();
-      logger.info('SMTP transporter verified successfully');
+      
+      try {
+        await transporter.verify();
+        logger.info('SMTP transporter verified successfully');
+      } catch (verifyError: any) {
+        logger.warn('SMTP verification failed, trying alternative configuration:', verifyError.message);
+        
+        // Try alternative configuration for Hostinger
+        const altTransporter = nodemailer.createTransport({
+          host: process.env.SMTP_HOST,
+          port: 465,
+          secure: true,
+          auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+          },
+          tls: {
+            rejectUnauthorized: false
+          }
+        });
+        
+        try {
+          await altTransporter.verify();
+          logger.info('Alternative SMTP configuration verified successfully');
+          // Use the alternative transporter
+          const emailResult = await altTransporter.sendMail({
+            from: process.env.SMTP_FROM || process.env.SMTP_USER,
+            to: recipient,
+            subject: `[ElitePos Contact] ${subject}`,
+            text: emailContent,
+            replyTo: email,
+          });
+          logger.info('Email sent with alternative config:', emailResult.messageId);
+          
+          // Send confirmation email
+          const confirmationResult = await altTransporter.sendMail({
+            from: process.env.SMTP_FROM || process.env.SMTP_USER,
+            to: email,
+            subject: 'Thank you for contacting ElitePos',
+            text: `Hi ${name},
+
+Thank you for contacting ElitePos. We have received your message and will get back to you within 24 hours.
+
+Your message:
+Subject: ${subject}
+Message: ${message}
+
+Best regards,
+The ElitePos Team
+
+---
+ElitePos
+Phone: 1-804-360-1129
+Email: ${recipient}
+Address: 2807 Hampton Woods Drive, Henrico, VA 23233`,
+          });
+          logger.info('Confirmation email sent with alternative config:', confirmationResult.messageId);
+          
+          logger.info(`📧 EMAIL SENT SUCCESSFULLY (ALT CONFIG):
+            ═══════════════════════════════════════
+            To: ${recipient}
+            From: ${email}
+            Name: ${name}
+            Company: ${company || 'Not provided'}
+            Subject: ${subject}
+            Type: ${type === 'sales' ? 'Sales Inquiry' : 'Technical Support'}
+            Message ID: ${emailResult.messageId}
+            Timestamp: ${new Date().toISOString()}
+            ═══════════════════════════════════════
+          `);
+
+          return res.status(200).json({
+            success: true,
+            message: 'Message sent successfully. We will get back to you soon!',
+          });
+          
+        } catch (altError: any) {
+          logger.error('Alternative SMTP configuration also failed:', altError.message);
+          throw verifyError; // Throw original error to fall through to logging
+        }
+      }
 
       // Send email to support/sales
       logger.info(`Sending email to ${recipient}...`);
