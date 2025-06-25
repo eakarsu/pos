@@ -12,6 +12,7 @@ import categoryRoutes from './categories';
 import dashboardRoutes from './dashboard';
 import settingsRoutes from './settings';
 import systemRoutes from './system';
+import contactRoutes from './contact';
 
 const router = Router();
 
