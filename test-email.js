@@ -21,7 +21,7 @@ async function testEmailSending() {
   const port = parseInt(process.env.SMTP_PORT || '587');
   const isSSL = port === 465;
   
-  console.log(`\n🔧 Configuration:');
+  console.log(`\n Configuration:`);
   console.log(`Port: ${port}`);
   console.log(`SSL: ${isSSL}`);
   console.log(`Encryption: ${isSSL ? 'SSL' : 'STARTTLS'}`);
@@ -107,7 +107,7 @@ async function testEmailSending() {
     console.log(`   Secure: ${config.secure}`);
     
     try {
-      const transporter = nodemailer.createTransporter(config);
+      const transporter = nodemailer.createTransport(config);
       
       console.log('   📡 Verifying connection...');
       await transporter.verify();
