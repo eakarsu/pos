@@ -9,25 +9,36 @@ const router = Router();
 // Email transporter configuration
 const createTransporter = () => {
   const port = parseInt(process.env.SMTP_PORT || '587');
+  const isSSL = port === 465;
+  
   const config = {
     host: process.env.SMTP_HOST,
     port: port,
-    secure: port === 465, // true for 465, false for other ports
+    secure: isSSL, // true for 465 (SSL), false for 587 (STARTTLS)
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
-    // Add timeout and connection options
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 5000, // 5 seconds
-    socketTimeout: 10000, // 10 seconds
-    // Additional options for better compatibility with Hostinger
-    requireTLS: port !== 465,
-    tls: {
-      rejectUnauthorized: false, // Allow self-signed certificates
-      ciphers: 'SSLv3'
-    },
-    // Try different authentication methods
+    // Connection timeouts
+    connectionTimeout: 15000, // 15 seconds
+    greetingTimeout: 10000, // 10 seconds
+    socketTimeout: 15000, // 15 seconds
+    // Configure based on port
+    ...(isSSL ? {
+      // SSL configuration for port 465
+      tls: {
+        rejectUnauthorized: false,
+        servername: process.env.SMTP_HOST
+      }
+    } : {
+      // STARTTLS configuration for port 587
+      requireTLS: true,
+      tls: {
+        rejectUnauthorized: false,
+        ciphers: 'SSLv3'
+      }
+    }),
+    // Authentication
     authMethod: 'PLAIN',
     debug: process.env.NODE_ENV === 'development',
     logger: process.env.NODE_ENV === 'development'
@@ -39,7 +50,8 @@ const createTransporter = () => {
     secure: config.secure,
     user: config.auth.user,
     hasPassword: !!config.auth.pass,
-    passwordLength: config.auth.pass?.length || 0
+    passwordLength: config.auth.pass?.length || 0,
+    encryptionType: isSSL ? 'SSL' : 'STARTTLS'
   })}`);
   
   return nodemailer.createTransport(config);
@@ -137,18 +149,38 @@ Time: ${new Date().toISOString()}
       } catch (verifyError: any) {
         logger.warn('SMTP verification failed, trying alternative configuration:', verifyError.message);
         
-        // Try alternative configuration for Hostinger
+        // Try alternative port/encryption method
+        const currentPort = parseInt(process.env.SMTP_PORT || '587');
+        const altPort = currentPort === 587 ? 465 : 587;
+        const altSecure = altPort === 465;
+        
+        logger.info(`Trying alternative configuration: Port ${altPort} with ${altSecure ? 'SSL' : 'STARTTLS'}`);
+        
         const altTransporter = nodemailer.createTransport({
           host: process.env.SMTP_HOST,
-          port: 465,
-          secure: true,
+          port: altPort,
+          secure: altSecure,
           auth: {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,
           },
-          tls: {
-            rejectUnauthorized: false
-          }
+          connectionTimeout: 15000,
+          greetingTimeout: 10000,
+          socketTimeout: 15000,
+          ...(altSecure ? {
+            // SSL configuration for port 465
+            tls: {
+              rejectUnauthorized: false,
+              servername: process.env.SMTP_HOST
+            }
+          } : {
+            // STARTTLS configuration for port 587
+            requireTLS: true,
+            tls: {
+              rejectUnauthorized: false,
+              ciphers: 'SSLv3'
+            }
+          })
         });
         
         try {
