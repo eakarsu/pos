@@ -17,6 +17,7 @@
     "test:integration": "jest tests/integration",
     "test:coverage": "jest --coverage",
     "test:setup": "npx prisma db push --force-reset && npx prisma db seed",
+    "test:email": "node test-email.js",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix"
   },
