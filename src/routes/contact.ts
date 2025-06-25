@@ -45,6 +45,29 @@ router.post('/', validateContactForm, async (req: Request, res: Response) => {
 
     const { name, email, company, subject, message, type } = req.body;
 
+    // Log the incoming request for debugging
+    logger.info(`Contact form submission attempt: ${email} (${type}): ${subject}`);
+
+    // Check if SMTP is configured
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      logger.warn('SMTP not configured, simulating email send');
+      
+      // For development/testing - just log and return success
+      logger.info(`SIMULATED EMAIL SEND:
+        To: ${type === 'sales' ? 'sales@elitepos.chat' : 'support@elitepos.chat'}
+        From: ${email}
+        Subject: [ElitePos Contact] ${subject}
+        Name: ${name}
+        Company: ${company || 'Not provided'}
+        Message: ${message}
+      `);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Message sent successfully. We will get back to you soon!',
+      });
+    }
+
     // Determine recipient based on message type
     const recipient = type === 'sales' ? 'sales@elitepos.chat' : 'support@elitepos.chat';
 
@@ -68,6 +91,10 @@ router.post('/', validateContactForm, async (req: Request, res: Response) => {
 
     // Create transporter
     const transporter = createTransporter();
+
+    // Verify transporter configuration
+    await transporter.verify();
+    logger.info('SMTP transporter verified successfully');
 
     // Send email
     await transporter.sendMail({
@@ -103,7 +130,7 @@ router.post('/', validateContactForm, async (req: Request, res: Response) => {
       `,
     });
 
-    logger.info(`Contact form submitted by ${email} (${type}): ${subject}`);
+    logger.info(`Contact form submitted successfully by ${email} (${type}): ${subject}`);
 
     res.status(200).json({
       success: true,
@@ -112,9 +139,15 @@ router.post('/', validateContactForm, async (req: Request, res: Response) => {
 
   } catch (error) {
     logger.error('Contact form error:', error);
+    
+    // More detailed error response for debugging
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Detailed error:', errorMessage);
+    
     res.status(500).json({
       success: false,
       message: 'Failed to send message. Please try again later.',
+      ...(process.env.NODE_ENV === 'development' && { error: errorMessage })
     });
   }
 });

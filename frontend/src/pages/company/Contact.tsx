@@ -27,8 +27,11 @@ const Contact: React.FC = () => {
         body: JSON.stringify(formData),
       });
 
-      if (response.ok) {
+      const data = await response.json();
+
+      if (response.ok && data.success) {
         toast.success('Message sent successfully! We\'ll get back to you soon.');
+        // Reset form data
         setFormData({
           name: '',
           email: '',
@@ -38,10 +41,14 @@ const Contact: React.FC = () => {
           type: 'support'
         });
       } else {
-        throw new Error('Failed to send message');
+        // Handle validation errors or other API errors
+        const errorMessage = data.message || 'Failed to send message';
+        toast.error(errorMessage);
+        console.error('Contact form error:', data);
       }
     } catch (error) {
-      toast.error('Failed to send message. Please try again or contact us directly.');
+      console.error('Network error:', error);
+      toast.error('Failed to send message. Please check your connection and try again.');
     } finally {
       setIsSubmitting(false);
     }
