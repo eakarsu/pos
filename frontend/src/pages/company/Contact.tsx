@@ -45,6 +45,10 @@ const Contact: React.FC = () => {
         const errorMessage = data.message || 'Failed to send message';
         toast.error(errorMessage);
         console.error('Contact form error:', data);
+        
+        // Log more details for debugging
+        console.error('Response status:', response.status);
+        console.error('Response data:', data);
       }
     } catch (error) {
       console.error('Network error:', error);

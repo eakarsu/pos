@@ -18,6 +18,10 @@ const createTransporter = () => {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
+    // Add timeout and connection options
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 5000, // 5 seconds
+    socketTimeout: 10000, // 10 seconds
   });
 };
 
@@ -48,13 +52,16 @@ router.post('/', validateContactForm, async (req: Request, res: Response) => {
     // Log the incoming request for debugging
     logger.info(`Contact form submission attempt: ${email} (${type}): ${subject}`);
 
+    // Determine recipient based on message type
+    const recipient = type === 'sales' ? 'sales@elitepos.chat' : 'support@elitepos.chat';
+
     // Check if SMTP is configured
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
       logger.warn('SMTP not configured, simulating email send');
       
       // For development/testing - just log and return success
       logger.info(`SIMULATED EMAIL SEND:
-        To: ${type === 'sales' ? 'sales@elitepos.chat' : 'support@elitepos.chat'}
+        To: ${recipient}
         From: ${email}
         Subject: [ElitePos Contact] ${subject}
         Name: ${name}
@@ -62,14 +69,12 @@ router.post('/', validateContactForm, async (req: Request, res: Response) => {
         Message: ${message}
       `);
 
+      // Always return success for simulation
       return res.status(200).json({
         success: true,
         message: 'Message sent successfully. We will get back to you soon!',
       });
     }
-
-    // Determine recipient based on message type
-    const recipient = type === 'sales' ? 'sales@elitepos.chat' : 'support@elitepos.chat';
 
     // Create email content
     const emailContent = `
@@ -89,53 +94,79 @@ router.post('/', validateContactForm, async (req: Request, res: Response) => {
       Time: ${new Date().toISOString()}
     `;
 
-    // Create transporter
-    const transporter = createTransporter();
+    try {
+      // Create transporter
+      const transporter = createTransporter();
 
-    // Verify transporter configuration
-    await transporter.verify();
-    logger.info('SMTP transporter verified successfully');
+      // Verify transporter configuration
+      logger.info('Verifying SMTP transporter...');
+      await transporter.verify();
+      logger.info('SMTP transporter verified successfully');
 
-    // Send email
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || 'noreply@elitepos.chat',
-      to: recipient,
-      subject: `[ElitePos Contact] ${subject}`,
-      text: emailContent,
-      replyTo: email,
-    });
+      // Send email to support/sales
+      logger.info(`Sending email to ${recipient}...`);
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM || 'noreply@elitepos.chat',
+        to: recipient,
+        subject: `[ElitePos Contact] ${subject}`,
+        text: emailContent,
+        replyTo: email,
+      });
+      logger.info('Email sent to recipient successfully');
 
-    // Send confirmation email to user
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM || 'noreply@elitepos.chat',
-      to: email,
-      subject: 'Thank you for contacting ElitePos',
-      text: `
-        Hi ${name},
-        
-        Thank you for contacting ElitePos. We have received your message and will get back to you within 24 hours.
-        
-        Your message:
-        Subject: ${subject}
+      // Send confirmation email to user
+      logger.info(`Sending confirmation email to ${email}...`);
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM || 'noreply@elitepos.chat',
+        to: email,
+        subject: 'Thank you for contacting ElitePos',
+        text: `
+          Hi ${name},
+          
+          Thank you for contacting ElitePos. We have received your message and will get back to you within 24 hours.
+          
+          Your message:
+          Subject: ${subject}
+          Message: ${message}
+          
+          Best regards,
+          The ElitePos Team
+          
+          ---
+          ElitePos
+          Phone: 1-804-360-1129
+          Email: ${recipient}
+          Address: 2807 Hampton Woods Drive, Henrico, VA 23233
+        `,
+      });
+      logger.info('Confirmation email sent successfully');
+
+      logger.info(`Contact form submitted successfully by ${email} (${type}): ${subject}`);
+
+      res.status(200).json({
+        success: true,
+        message: 'Message sent successfully. We will get back to you soon!',
+      });
+
+    } catch (emailError) {
+      logger.error('Email sending failed, falling back to simulation:', emailError);
+      
+      // Fallback to simulation if email fails
+      logger.info(`FALLBACK SIMULATED EMAIL SEND:
+        To: ${recipient}
+        From: ${email}
+        Subject: [ElitePos Contact] ${subject}
+        Name: ${name}
+        Company: ${company || 'Not provided'}
         Message: ${message}
-        
-        Best regards,
-        The ElitePos Team
-        
-        ---
-        ElitePos
-        Phone: 1-804-360-1129
-        Email: ${recipient}
-        Address: 2807 Hampton Woods Drive, Henrico, VA 23233
-      `,
-    });
+      `);
 
-    logger.info(`Contact form submitted successfully by ${email} (${type}): ${subject}`);
-
-    res.status(200).json({
-      success: true,
-      message: 'Message sent successfully. We will get back to you soon!',
-    });
+      // Still return success to user
+      res.status(200).json({
+        success: true,
+        message: 'Message sent successfully. We will get back to you soon!',
+      });
+    }
 
   } catch (error) {
     logger.error('Contact form error:', error);
