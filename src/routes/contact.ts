@@ -57,10 +57,10 @@ router.post('/', validateContactForm, async (req: Request, res: Response) => {
 
     // Check if SMTP is configured
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      logger.warn('SMTP not configured, simulating email send');
+      logger.warn('SMTP not configured (missing SMTP_USER or SMTP_PASS), simulating email send');
       
       // For development/testing - just log and return success
-      logger.info(`SIMULATED EMAIL SEND:
+      logger.info(`SIMULATED EMAIL SEND (NO SMTP CONFIG):
         To: ${recipient}
         From: ${email}
         Subject: [ElitePos Contact] ${subject}
@@ -75,6 +75,8 @@ router.post('/', validateContactForm, async (req: Request, res: Response) => {
         message: 'Message sent successfully. We will get back to you soon!',
       });
     }
+
+    logger.info(`SMTP configured - User: ${process.env.SMTP_USER}, Host: ${process.env.SMTP_HOST}`);
 
     // Create email content
     const emailContent = `
@@ -148,17 +150,24 @@ router.post('/', validateContactForm, async (req: Request, res: Response) => {
         message: 'Message sent successfully. We will get back to you soon!',
       });
 
-    } catch (emailError) {
+    } catch (emailError: any) {
       logger.error('Email sending failed, falling back to simulation:', emailError);
       
+      // Log specific error details
+      if (emailError.code === 'EAUTH') {
+        logger.error('SMTP Authentication failed - check your email credentials');
+        logger.error('Make sure you are using an App Password for Gmail, not your regular password');
+      }
+      
       // Fallback to simulation if email fails
-      logger.info(`FALLBACK SIMULATED EMAIL SEND:
+      logger.info(`FALLBACK SIMULATED EMAIL SEND (SMTP FAILED):
         To: ${recipient}
         From: ${email}
         Subject: [ElitePos Contact] ${subject}
         Name: ${name}
         Company: ${company || 'Not provided'}
         Message: ${message}
+        Error: ${emailError.message}
       `);
 
       // Still return success to user
