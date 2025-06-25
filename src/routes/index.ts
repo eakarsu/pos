@@ -48,6 +48,7 @@ router.get('/', (req, res) => {
       dashboard: '/api/v1/dashboard',
       settings: '/api/v1/settings',
       system: '/api/v1/system',
+      contact: '/api/contact',
     },
   });
 });
@@ -63,5 +64,6 @@ router.use(`/api/v1/categories`, categoryRoutes);
 router.use(`/api/v1/dashboard`, dashboardRoutes);
 router.use(`/api/v1/settings`, settingsRoutes);
 router.use(`/api/v1/system`, systemRoutes);
+router.use(`/api/contact`, contactRoutes);
 
 export default router;
