@@ -8,10 +8,11 @@ const router = Router();
 
 // Email transporter configuration
 const createTransporter = () => {
-  return nodemailer.createTransport({
+  const port = parseInt(process.env.SMTP_PORT || '587');
+  const config = {
     host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: false, // true for 465, false for other ports
+    port: port,
+    secure: port === 465, // true for 465, false for other ports
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
@@ -20,7 +21,23 @@ const createTransporter = () => {
     connectionTimeout: 10000, // 10 seconds
     greetingTimeout: 5000, // 5 seconds
     socketTimeout: 10000, // 10 seconds
-  });
+    // Additional options for better compatibility
+    requireTLS: true,
+    tls: {
+      rejectUnauthorized: false // Allow self-signed certificates
+    }
+  };
+  
+  logger.info(`Creating SMTP transporter with config: ${JSON.stringify({
+    host: config.host,
+    port: config.port,
+    secure: config.secure,
+    user: config.auth.user,
+    // Don't log the password
+    hasPassword: !!config.auth.pass
+  })}`);
+  
+  return nodemailer.createTransport(config);
 };
 
 // Validation middleware
@@ -56,6 +73,7 @@ router.post('/', validateContactForm, async (req: Request, res: Response) => {
     // Check if SMTP is configured
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS || !process.env.SMTP_HOST) {
       logger.warn('SMTP not configured, logging message only');
+      logger.warn(`SMTP Config Check - User: ${!!process.env.SMTP_USER}, Pass: ${!!process.env.SMTP_PASS}, Host: ${!!process.env.SMTP_HOST}`);
       
       // Log the contact form submission
       logger.info(`📧 NEW CONTACT FORM SUBMISSION (LOGGED ONLY):
@@ -79,6 +97,9 @@ router.post('/', validateContactForm, async (req: Request, res: Response) => {
         message: 'Message sent successfully. We will get back to you soon!',
       });
     }
+
+    // Log SMTP configuration (without password)
+    logger.info(`SMTP Configuration - Host: ${process.env.SMTP_HOST}, Port: ${process.env.SMTP_PORT}, User: ${process.env.SMTP_USER}`);
 
     // Create email content
     const emailContent = `
