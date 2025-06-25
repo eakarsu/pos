@@ -10,7 +10,7 @@ const router = Router();
 const createTransporter = () => {
   // Configure based on your email service
   // This is a basic SMTP configuration - adjust as needed
-  return nodemailer.createTransporter({
+  return nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
     port: parseInt(process.env.SMTP_PORT || '587'),
     secure: false, // true for 465, false for other ports
