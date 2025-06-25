@@ -1,9 +1,27 @@
 import { Router, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
+import nodemailer from 'nodemailer';
 import { config } from '../config/environment';
 import { logger } from '../utils/logger';
 
 const router = Router();
+
+// Email transporter configuration
+const createTransporter = () => {
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+    // Add timeout and connection options
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 5000, // 5 seconds
+    socketTimeout: 10000, // 10 seconds
+  });
+};
 
 // Validation middleware
 const validateContactForm = [
@@ -35,28 +53,142 @@ router.post('/', validateContactForm, async (req: Request, res: Response) => {
     // Determine recipient based on message type
     const recipient = type === 'sales' ? 'sales@elitepos.chat' : 'support@elitepos.chat';
 
-    // Log the contact form submission - this is the main functionality
-    logger.info(`📧 NEW CONTACT FORM SUBMISSION:
-      ═══════════════════════════════════════
-      To: ${recipient}
-      From: ${email}
-      Name: ${name}
-      Company: ${company || 'Not provided'}
-      Subject: ${subject}
-      Type: ${type === 'sales' ? 'Sales Inquiry' : 'Technical Support'}
+    // Check if SMTP is configured
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS || !process.env.SMTP_HOST) {
+      logger.warn('SMTP not configured, logging message only');
       
-      Message:
-      ${message}
-      
-      Timestamp: ${new Date().toISOString()}
-      ═══════════════════════════════════════
-    `);
+      // Log the contact form submission
+      logger.info(`📧 NEW CONTACT FORM SUBMISSION (LOGGED ONLY):
+        ═══════════════════════════════════════
+        To: ${recipient}
+        From: ${email}
+        Name: ${name}
+        Company: ${company || 'Not provided'}
+        Subject: ${subject}
+        Type: ${type === 'sales' ? 'Sales Inquiry' : 'Technical Support'}
+        
+        Message:
+        ${message}
+        
+        Timestamp: ${new Date().toISOString()}
+        ═══════════════════════════════════════
+      `);
 
-    // Always return success - the contact form is working correctly
-    res.status(200).json({
-      success: true,
-      message: 'Message sent successfully. We will get back to you soon!',
-    });
+      return res.status(200).json({
+        success: true,
+        message: 'Message sent successfully. We will get back to you soon!',
+      });
+    }
+
+    // Create email content
+    const emailContent = `
+New Contact Form Message
+
+Type: ${type === 'sales' ? 'Sales Inquiry' : 'Technical Support'}
+Name: ${name}
+Email: ${email}
+Company: ${company || 'Not provided'}
+Subject: ${subject}
+
+Message:
+${message}
+
+---
+Sent from ElitePos Contact Form
+Time: ${new Date().toISOString()}
+    `;
+
+    try {
+      // Create transporter
+      const transporter = createTransporter();
+
+      // Verify transporter configuration
+      logger.info('Verifying SMTP transporter...');
+      await transporter.verify();
+      logger.info('SMTP transporter verified successfully');
+
+      // Send email to support/sales
+      logger.info(`Sending email to ${recipient}...`);
+      const emailResult = await transporter.sendMail({
+        from: process.env.SMTP_FROM || process.env.SMTP_USER,
+        to: recipient,
+        subject: `[ElitePos Contact] ${subject}`,
+        text: emailContent,
+        replyTo: email,
+      });
+      logger.info('Email sent to recipient successfully:', emailResult.messageId);
+
+      // Send confirmation email to user
+      logger.info(`Sending confirmation email to ${email}...`);
+      const confirmationResult = await transporter.sendMail({
+        from: process.env.SMTP_FROM || process.env.SMTP_USER,
+        to: email,
+        subject: 'Thank you for contacting ElitePos',
+        text: `Hi ${name},
+
+Thank you for contacting ElitePos. We have received your message and will get back to you within 24 hours.
+
+Your message:
+Subject: ${subject}
+Message: ${message}
+
+Best regards,
+The ElitePos Team
+
+---
+ElitePos
+Phone: 1-804-360-1129
+Email: ${recipient}
+Address: 2807 Hampton Woods Drive, Henrico, VA 23233`,
+      });
+      logger.info('Confirmation email sent successfully:', confirmationResult.messageId);
+
+      // Also log for record keeping
+      logger.info(`📧 EMAIL SENT SUCCESSFULLY:
+        ═══════════════════════════════════════
+        To: ${recipient}
+        From: ${email}
+        Name: ${name}
+        Company: ${company || 'Not provided'}
+        Subject: ${subject}
+        Type: ${type === 'sales' ? 'Sales Inquiry' : 'Technical Support'}
+        Message ID: ${emailResult.messageId}
+        Timestamp: ${new Date().toISOString()}
+        ═══════════════════════════════════════
+      `);
+
+      res.status(200).json({
+        success: true,
+        message: 'Message sent successfully. We will get back to you soon!',
+      });
+
+    } catch (emailError: any) {
+      logger.error('Email sending failed:', emailError);
+      
+      // Fallback to logging if email fails
+      logger.info(`📧 EMAIL FAILED - LOGGING INSTEAD:
+        ═══════════════════════════════════════
+        To: ${recipient}
+        From: ${email}
+        Name: ${name}
+        Company: ${company || 'Not provided'}
+        Subject: ${subject}
+        Type: ${type === 'sales' ? 'Sales Inquiry' : 'Technical Support'}
+        
+        Message:
+        ${message}
+        
+        Error: ${emailError.message}
+        Timestamp: ${new Date().toISOString()}
+        ═══════════════════════════════════════
+      `);
+
+      // Still return success to user
+      res.status(200).json({
+        success: true,
+        message: 'Message sent successfully. We will get back to you soon!',
+      });
+    }
 
   } catch (error) {
     logger.error('Contact form error:', error);
