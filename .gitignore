@@ -108,3 +108,4 @@ coverage/
 
 # Prisma
 prisma/migrations/
+.env
