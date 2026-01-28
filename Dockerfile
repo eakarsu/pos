@@ -1,4 +1,4 @@
-FROM node:18-slim
+FROM node:22-slim
 
 # Install required packages for Prisma and the application
 RUN apt-get update && apt-get install -y \
@@ -17,7 +17,7 @@ COPY package*.json ./
 COPY tsconfig.json ./
 
 # Install all dependencies and tsx globally
-RUN npm ci && npm install -g tsx@latest
+RUN npm ci --legacy-peer-deps && npm install -g tsx@latest
 
 # Copy source code
 COPY src ./src
