@@ -63,6 +63,38 @@ class ApiService {
     });
   }
 
+  async forgotPassword(email: string) {
+    return this.request('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email })
+    });
+  }
+
+  async resetPassword(token: string, password: string) {
+    return this.request('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, password })
+    });
+  }
+
+  async changePassword(currentPassword: string, newPassword: string) {
+    return this.request('/auth/change-password', {
+      method: 'PUT',
+      body: JSON.stringify({ currentPassword, newPassword })
+    });
+  }
+
+  async verifyEmail(token: string) {
+    return this.request(`/auth/verify-email/${token}`);
+  }
+
+  async resendVerification(email: string) {
+    return this.request('/auth/resend-verification', {
+      method: 'POST',
+      body: JSON.stringify({ email })
+    });
+  }
+
   // Product methods
   async getProducts(params?: any) {
     const queryString = params ? `?${new URLSearchParams(params)}` : '';
@@ -77,6 +109,48 @@ class ApiService {
     return this.request('/products', {
       method: 'POST',
       body: JSON.stringify(productData)
+    });
+  }
+
+  async bulkDeleteProducts(ids: string[]) {
+    return this.request('/products/bulk-delete', {
+      method: 'POST',
+      body: JSON.stringify({ ids })
+    });
+  }
+
+  async bulkUpdateProducts(ids: string[], updates: { field: string; value: any }) {
+    return this.request('/products/bulk-update', {
+      method: 'POST',
+      body: JSON.stringify({ ids, updates })
+    });
+  }
+
+  async bulkDeleteCustomers(ids: string[]) {
+    return this.request('/customers/bulk-delete', {
+      method: 'POST',
+      body: JSON.stringify({ ids })
+    });
+  }
+
+  async bulkUpdateCustomers(ids: string[], updates: { field: string; value: any }) {
+    return this.request('/customers/bulk-update', {
+      method: 'POST',
+      body: JSON.stringify({ ids, updates })
+    });
+  }
+
+  async bulkDeleteInventory(ids: string[]) {
+    return this.request('/inventory/bulk-delete', {
+      method: 'POST',
+      body: JSON.stringify({ ids })
+    });
+  }
+
+  async bulkUpdateInventory(ids: string[], updates: { field: string; value: any }) {
+    return this.request('/inventory/bulk-update', {
+      method: 'POST',
+      body: JSON.stringify({ ids, updates })
     });
   }
 

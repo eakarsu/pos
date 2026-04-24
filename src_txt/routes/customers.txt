@@ -9,65 +9,10 @@ const prisma = new PrismaClient();
 // Apply authentication to all routes
 router.use(authenticate);
 
-// Bulk delete customers - MUST be before /:id
-router.post('/bulk-delete', async (req, res, next) => {
-  try {
-    const { ids } = req.body;
-    if (!Array.isArray(ids) || ids.length === 0) {
-      return res.status(400).json({ success: false, message: 'ids array is required' });
-    }
-
-    await prisma.customer.updateMany({
-      where: { id: { in: ids } },
-      data: { isActive: false }
-    });
-
-    res.json({
-      success: true,
-      message: `${ids.length} customers deactivated successfully`
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Bulk update customers - MUST be before /:id
-router.post('/bulk-update', async (req, res, next) => {
-  try {
-    const { ids, updates } = req.body;
-    if (!Array.isArray(ids) || ids.length === 0) {
-      return res.status(400).json({ success: false, message: 'ids array is required' });
-    }
-    if (!updates || !updates.field || updates.value === undefined) {
-      return res.status(400).json({ success: false, message: 'updates with field and value are required' });
-    }
-
-    const allowedFields = ['isActive'];
-    if (!allowedFields.includes(updates.field)) {
-      return res.status(400).json({ success: false, message: `Field ${updates.field} is not allowed for bulk update` });
-    }
-
-    let value: any = updates.value;
-    if (updates.field === 'isActive') value = value === 'true' || value === true;
-
-    await prisma.customer.updateMany({
-      where: { id: { in: ids } },
-      data: { [updates.field]: value }
-    });
-
-    res.json({
-      success: true,
-      message: `${ids.length} customers updated successfully`
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
 // Get all customers
 router.get('/', async (req, res, next) => {
   try {
-    const { page = 1, limit = 20, search, isActive, sortBy, sortOrder } = req.query;
+    const { page = 1, limit = 20, search, isActive } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
 
     const where: any = {};
@@ -84,11 +29,6 @@ router.get('/', async (req, res, next) => {
     if (isActive !== undefined) {
       where.isActive = isActive === 'true';
     }
-
-    // Sorting
-    const allowedSortFields = ['firstName', 'lastName', 'email', 'totalSpent', 'loyaltyPoints', 'createdAt', 'isActive'];
-    const sortField = allowedSortFields.includes(sortBy as string) ? (sortBy as string) : 'createdAt';
-    const order = sortOrder === 'asc' ? 'asc' : 'desc';
 
     const [customers, total] = await Promise.all([
       prisma.customer.findMany({
@@ -109,7 +49,7 @@ router.get('/', async (req, res, next) => {
         },
         skip,
         take: Number(limit),
-        orderBy: { [sortField]: order }
+        orderBy: { createdAt: 'desc' }
       }),
       prisma.customer.count({ where })
     ]);
@@ -172,15 +112,28 @@ router.get('/:id', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
   try {
     const {
-      email, phone, firstName, lastName,
-      dateOfBirth, address, city, state, zipCode
+      email,
+      phone,
+      firstName,
+      lastName,
+      dateOfBirth,
+      address,
+      city,
+      state,
+      zipCode
     } = req.body;
 
     const customer = await prisma.customer.create({
       data: {
-        email, phone, firstName, lastName,
+        email,
+        phone,
+        firstName,
+        lastName,
         dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
-        address, city, state, zipCode
+        address,
+        city,
+        state,
+        zipCode
       }
     });
 

@@ -21,6 +21,9 @@ import Support from './pages/Support';
 import Solutions from './pages/Solutions';
 import Integrations from './pages/Integrations';
 import API from './pages/API';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import VerifyEmail from './pages/VerifyEmail';
 
 // Integration detail pages
 import Stripe from './pages/integrations/Stripe';
@@ -150,6 +153,11 @@ const AppRoutes: React.FC = () => {
           <Route path="/terms" element={<Terms />} />
           <Route path="/security" element={<Security />} />
           
+          {/* Auth pages */}
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+
           {/* Other pages */}
           <Route path="/demo" element={<div className="p-8"><h1 className="text-2xl">Demo - Coming Soon</h1></div>} />
           

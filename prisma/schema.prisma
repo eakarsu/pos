@@ -32,6 +32,14 @@ model User {
   salary      Float?
   commission  Float?   @default(0)
 
+  // Password reset
+  passwordResetToken    String?   @unique
+  passwordResetExpires  DateTime?
+
+  // Email verification
+  emailVerified          Boolean   @default(false)
+  emailVerificationToken String?   @unique
+
   // Relations
   sales       Sale[]
   shifts      Shift[]

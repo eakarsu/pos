@@ -1,0 +1,82 @@
+You are an expert SEO developer specializing in 2025 SEO best practices. I need you to implement comprehensive SEO optimizations for my food ordering website (elitepos.chat).
+
+**Current Tech Stack:**
+- React/TypeScript frontend
+- Node.js backend
+- Tailwind CSS
+- Mobile-responsive design (already implemented)
+
+**SEO Requirements to Implement:**
+
+## 1. TECHNICAL SEO FOUNDATION
+- Add proper HTML semantic structure (header, nav, main, section, article, footer)
+- Implement Schema.org structured data for:
+  * Restaurant/LocalBusiness markup
+  * Menu items and pricing
+  * Customer reviews
+  * Contact information and hours
+- Create XML sitemap and robots.txt
+- Add canonical URLs to prevent duplicate content
+- Implement proper 301 redirects structure
+
+## 2. CORE WEB VITALS OPTIMIZATION
+- Optimize Largest Contentful Paint (LCP) - target under 2.5 seconds
+- Improve First Input Delay (FID) - target under 100ms
+- Minimize Cumulative Layout Shift (CLS) - target under 0.1
+- Add lazy loading for images below the fold
+- Implement critical CSS inlining
+- Add resource hints (preload, prefetch, preconnect)
+
+## 3. ON-PAGE SEO ELEMENTS
+- Optimize title tags (50-60 characters) with target keywords
+- Create compelling meta descriptions (150-160 characters)
+- Implement proper H1-H6 heading hierarchy
+- Add internal linking structure between menu categories
+- Optimize image alt tags with descriptive text
+- Create keyword-rich URLs (/menu/appetizers, /about-us, etc.)
+
+## 4. CONTENT OPTIMIZATION
+- Add FAQ section targeting "People Also Ask" features
+- Create location-based content for local SEO
+- Implement breadcrumb navigation
+- Add customer testimonials and reviews section
+- Create blog section for food-related content
+
+## 5. MOBILE-FIRST OPTIMIZATION
+- Ensure mobile page speed under 3 seconds
+- Implement AMP (Accelerated Mobile Pages) for key landing pages
+- Add touch-friendly navigation
+- Optimize for voice search queries
+- Implement PWA features (service worker, app manifest)
+
+## 6. SERP FEATURES OPTIMIZATION
+- Structure content for Featured Snippets
+- Optimize for AI Overviews with concise answers
+- Add FAQ schema for People Also Ask boxes
+- Create content targeting local pack results
+- Implement review markup for star ratings
+
+## 7. ANALYTICS & MONITORING
+- Set up Google Search Console
+- Implement Google Analytics 4 with enhanced ecommerce
+- Add Google Tag Manager
+- Set up Core Web Vitals monitoring
+- Create custom events for menu interactions
+
+**Specific Files to Modify:**
+- Update HomePage.tsx with SEO components
+- Enhance index.css with performance optimizations
+- Add SEO utility components and hooks
+- Create sitemap generation script
+- Update package.json with SEO-related dependencies
+
+**Priority Order:**
+1. Technical foundation (Schema, meta tags, structure)
+2. Core Web Vitals improvements
+3. Content optimization
+4. Local SEO implementation
+5. Advanced SERP features
+
+Please implement these optimizations systematically, starting with the technical foundation. Focus on 2025 SEO best practices including AI search optimization, E-E-A-T signals, and user experience metrics that directly impact rankings.
+
+Show me the specific code changes for each file and explain the SEO impact of each modification.
