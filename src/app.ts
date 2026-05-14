@@ -55,6 +55,7 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/', routes);
+app.use('/', require('./routes/extras').default); // Custom Feature Suggestions (batch 11)
 
 // Swagger documentation
 setupSwagger(app);

@@ -1,3 +1,14 @@
+// === Batch 11 Gaps & Frontend Mounts ===
+import GapProductRecommendationPage from './pages/gap/GapProductRecommendationPage'
+import GapDemandForecastingPage from './pages/gap/GapDemandForecastingPage'
+import GapDynamicPricingPage from './pages/gap/GapDynamicPricingPage'
+import GapDrawerAnomalyPage from './pages/gap/GapDrawerAnomalyPage'
+import GapPaymentTerminalPage from './pages/gap/GapPaymentTerminalPage'
+import GapReceiptPrintingPage from './pages/gap/GapReceiptPrintingPage'
+import GapMultiLocationPage from './pages/gap/GapMultiLocationPage'
+import GapEmployeeShiftsPage from './pages/gap/GapEmployeeShiftsPage'
+import GapTaxJurisdictionsPage from './pages/gap/GapTaxJurisdictionsPage'
+import GapLoyaltyGiftcardsPage from './pages/gap/GapLoyaltyGiftcardsPage'
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
@@ -13,6 +24,8 @@ import Customers from './pages/Customers';
 import Inventory from './pages/Inventory';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
+import AIStudio from './pages/AIStudio';
+import Upsell from './pages/Upsell';
 import LandingPage from './pages/LandingPage';
 import Features from './pages/Features';
 import Pricing from './pages/Pricing';
@@ -185,6 +198,8 @@ const AppRoutes: React.FC = () => {
             <Route path="customers" element={<Customers />} />
             <Route path="inventory" element={<Inventory />} />
             <Route path="reports" element={<Reports />} />
+            <Route path="ai" element={<AIStudio />} />
+            <Route path="ai/upsell" element={<Upsell />} />
             <Route path="settings" element={<Settings />} />
           </Route>
           
@@ -198,7 +213,18 @@ const AppRoutes: React.FC = () => {
           <Route path="/settings" element={<Navigate to="/app/settings" replace />} />
           
           <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+              {/* === Batch 11 Gaps & Frontend Mounts === */}
+        <Route path="/gap/product-recommendation" element={<GapProductRecommendationPage />} />
+        <Route path="/gap/demand-forecasting" element={<GapDemandForecastingPage />} />
+        <Route path="/gap/dynamic-pricing" element={<GapDynamicPricingPage />} />
+        <Route path="/gap/drawer-anomaly" element={<GapDrawerAnomalyPage />} />
+        <Route path="/gap/payment-terminal" element={<GapPaymentTerminalPage />} />
+        <Route path="/gap/receipt-printing" element={<GapReceiptPrintingPage />} />
+        <Route path="/gap/multi-location" element={<GapMultiLocationPage />} />
+        <Route path="/gap/employee-shifts" element={<GapEmployeeShiftsPage />} />
+        <Route path="/gap/tax-jurisdictions" element={<GapTaxJurisdictionsPage />} />
+        <Route path="/gap/loyalty-giftcards" element={<GapLoyaltyGiftcardsPage />} />
+      </Routes>
         <Toaster position="top-right" />
       </div>
     </Router>

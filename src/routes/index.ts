@@ -13,6 +13,7 @@ import dashboardRoutes from './dashboard';
 import settingsRoutes from './settings';
 import systemRoutes from './system';
 import contactRoutes from './contact';
+import aiRoutes from './ai';
 
 const router = Router();
 
@@ -49,6 +50,7 @@ router.get('/', (req, res) => {
       settings: '/api/v1/settings',
       system: '/api/v1/system',
       contact: '/api/contact',
+      ai: '/api/v1/ai',
     },
   });
 });
@@ -65,5 +67,6 @@ router.use(`/api/v1/dashboard`, dashboardRoutes);
 router.use(`/api/v1/settings`, settingsRoutes);
 router.use(`/api/v1/system`, systemRoutes);
 router.use(`/api/contact`, contactRoutes);
+router.use(`/api/v1/ai`, aiRoutes);
 
 export default router;

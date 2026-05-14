@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -375,5 +375,34 @@ model SystemSetting {
   updatedAt DateTime @updatedAt
 
   @@map("system_settings")
+}
+
+model AiInsight {
+  id          String   @id @default(cuid())
+  type        String   // "sales", "inventory", "customers"
+  payload     String   // JSON string of the full AI response
+  generatedAt DateTime @default(now())
+
+  @@map("ai_insights")
+}
+
+/// Generic AI results store — JSONB input + output for any AI feature.
+/// Used by copilot, reorder agent, elasticity, fraud scoring, etc.
+model AiResult {
+  id          String   @id @default(cuid())
+  feature     String   // "copilot", "reorder", "elasticity", "fraud", etc.
+  userId      String?
+  input       Json
+  output      Json
+  model       String?
+  tokensUsed  Int?
+  durationMs  Int?
+  status      String   @default("success") // success | error
+  errorMessage String?
+  createdAt   DateTime @default(now())
+
+  @@index([feature, createdAt])
+  @@index([userId, createdAt])
+  @@map("ai_results")
 }
 
