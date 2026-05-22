@@ -21,6 +21,7 @@ const Layout: React.FC = () => {
     { name: 'Customers', href: '/app/customers', icon: UsersIcon },
     { name: 'Inventory', href: '/app/inventory', icon: ChartBarIcon },
     { name: 'Reports', href: '/app/reports', icon: ChartBarIcon },
+    { name: 'Margin Leak', href: '/app/margin-leak', icon: ChartBarIcon },
     { name: 'AI Studio', href: '/app/ai', icon: SparklesIcon },
     { name: 'Settings', href: '/app/settings', icon: CogIcon },
   ];

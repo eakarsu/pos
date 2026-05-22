@@ -1,7 +1,9 @@
-import { server } from './app';
+import { server, app } from './app';
 import { config } from './config/environment';
 import { logger } from './utils/logger';
 import gapFeaturesRouter from './routes/gap-features'; // === Batch 11 Gaps & Frontend Mounts ===
+
+app.use('/api', gapFeaturesRouter); // === Batch 11 Gaps & Frontend Mounts ===
 
 const PORT = config.port || 3000;
 
@@ -38,4 +40,3 @@ async function startServer() {
 }
 
 startServer();
-app.use('/api', gapFeaturesRouter); // === Batch 11 Gaps & Frontend Mounts ===

@@ -25,6 +25,7 @@ import Inventory from './pages/Inventory';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import AIStudio from './pages/AIStudio';
+import MarginLeak from './pages/MarginLeak';
 import Upsell from './pages/Upsell';
 import LandingPage from './pages/LandingPage';
 import Features from './pages/Features';
@@ -69,6 +70,9 @@ import Security from './pages/legal/Security';
 
 import { AuthProvider, useAuth } from './utils/AuthContext';
 import { SettingsProvider } from './utils/SettingsContext';
+
+import CodexCustomVizFeature from './pages/CodexCustomVizFeature';
+import CodexOperationsFeature from './pages/CodexOperationsFeature';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -128,6 +132,9 @@ const AppRoutes: React.FC = () => {
     <Router>
       <div className="App">
         <Routes>
+        <Route path="/codex/custom-viz" element={<ProtectedRoute><CodexCustomVizFeature /></ProtectedRoute>} />
+        <Route path="/codex/operations" element={<ProtectedRoute><CodexOperationsFeature /></ProtectedRoute>} />
+
           {/* Public Routes - Always accessible */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/features" element={<Features />} />
@@ -200,6 +207,7 @@ const AppRoutes: React.FC = () => {
             <Route path="reports" element={<Reports />} />
             <Route path="ai" element={<AIStudio />} />
             <Route path="ai/upsell" element={<Upsell />} />
+            <Route path="margin-leak" element={<MarginLeak />} />
             <Route path="settings" element={<Settings />} />
           </Route>
           
@@ -210,6 +218,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/customers" element={<Navigate to="/app/customers" replace />} />
           <Route path="/inventory" element={<Navigate to="/app/inventory" replace />} />
           <Route path="/reports" element={<Navigate to="/app/reports" replace />} />
+          <Route path="/margin-leak" element={<Navigate to="/app/margin-leak" replace />} />
           <Route path="/settings" element={<Navigate to="/app/settings" replace />} />
           
           <Route path="*" element={<Navigate to="/" replace />} />

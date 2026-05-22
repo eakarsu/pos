@@ -93,4 +93,4 @@ io.on('connection', (socket) => {
 app.set('io', io);
 
 export default app;
-export { server };
+export { server, app };

@@ -14,6 +14,7 @@ import settingsRoutes from './settings';
 import systemRoutes from './system';
 import contactRoutes from './contact';
 import aiRoutes from './ai';
+import marginLeakRoutes from './marginLeak';
 
 const router = Router();
 
@@ -68,5 +69,6 @@ router.use(`/api/v1/settings`, settingsRoutes);
 router.use(`/api/v1/system`, systemRoutes);
 router.use(`/api/contact`, contactRoutes);
 router.use(`/api/v1/ai`, aiRoutes);
+router.use(`/api/v1/margin-leak`, marginLeakRoutes);
 
 export default router;
