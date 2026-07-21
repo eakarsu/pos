@@ -36,7 +36,7 @@ router.get('/test-db', async (req, res) => {
 // Register
 router.post('/register', async (req, res, next) => {
   try {
-    const { email, username, firstName, lastName, password, role = 'CASHIER' } = req.body;
+    const { email, username, firstName, lastName, password } = req.body;
 
     // Check if user exists
     const existingUser = await prisma.user.findFirst({
@@ -66,7 +66,7 @@ router.post('/register', async (req, res, next) => {
         firstName,
         lastName,
         password: hashedPassword,
-        role,
+        role: 'CUSTOMER',
         emailVerified: false,
         emailVerificationToken
       },
@@ -104,8 +104,6 @@ router.post('/register', async (req, res, next) => {
 // Login
 router.post('/login', async (req, res, next) => {
   try {
-    console.log('Login attempt:', { email: req.body.email });
-
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -124,7 +122,7 @@ router.post('/login', async (req, res, next) => {
     }
 
     const user = await prisma.user.findUnique({
-      where: { email }
+      where: { email: email.trim().toLowerCase() }
     });
 
     if (!user || !user.isActive) {
@@ -191,6 +189,30 @@ router.post('/login', async (req, res, next) => {
       message: 'Internal server error during login',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
+  }
+});
+
+router.get('/me', authenticate, async (req: AuthRequest, res, next) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ success: false, message: 'Authentication required' });
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        isActive: true,
+        lastLogin: true,
+      },
+    });
+    if (!user?.isActive) return res.status(401).json({ success: false, message: 'Session is no longer valid' });
+    return res.json({ success: true, data: { user } });
+  } catch (error) {
+    return next(error);
   }
 });
 

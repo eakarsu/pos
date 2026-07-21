@@ -59,11 +59,11 @@ router.post('/', async (req: Request, res: Response) => {
       where: {
         createdAt: { gte: since },
         status: 'COMPLETED',
-        saleItems: { some: { productId: { in: cartProducts.map((p) => p.id) } } },
+        items: { some: { productId: { in: cartProducts.map((p) => p.id) } } },
       },
       select: {
         id: true,
-        saleItems: {
+        items: {
           select: {
             productId: true,
             product: { select: { id: true, name: true, price: true, isActive: true } },
@@ -78,7 +78,7 @@ router.post('/', async (req: Request, res: Response) => {
     const coCount = new Map<string, { name: string; price: number; count: number }>();
     for (const sale of coPurchaseSales) {
       const seen = new Set<string>();
-      for (const item of sale.saleItems) {
+      for (const item of sale.items) {
         if (!item.productId || cartIds.has(item.productId) || !item.product?.isActive) continue;
         if (seen.has(item.productId)) continue;
         seen.add(item.productId);

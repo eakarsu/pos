@@ -64,6 +64,7 @@ export const errorHandler = (
   const errorResponse = {
     success: false,
     message,
+    ...((err as any).code && { code: (err as any).code }),
     ...(config.nodeEnv === 'development' && {
       stack: err.stack,
       error: err,

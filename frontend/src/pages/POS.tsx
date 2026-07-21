@@ -1,460 +1,174 @@
-import React, { useState, useEffect } from 'react';
-import { PlusIcon, MinusIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { useSettings } from '../utils/SettingsContext';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { MinusIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { enqueueOfflineCheckout, pendingOfflineCheckouts, removeOfflineCheckout, type OfflineCheckoutEnvelope } from '../services/offlineCheckoutQueue';
 
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  total: number;
+type CatalogProduct = { id: string; name: string; sku: string; barcode?: string; categoryId?: string; unitPriceCents: number; availableMilliunits: number };
+type TaxRule = { id: string; rateBps: number; appliesTo: string; referenceId?: string; priority: number; compound: boolean };
+type Catalog = { location: { id: string; code: string; currency: string; fiscalMode: string }; taxProfile: { version: number; jurisdictionCode: string; isCertified: boolean; rules: TaxRule[] }; products: CatalogProduct[] };
+type CartItem = CatalogProduct & { quantityMilliunits: number };
+type TenderMode = 'CASH' | 'CARD_PRESENT' | 'GIFT_CARD' | 'SPLIT_CASH_CARD';
+
+const roundHalfUp = (numerator: number, denominator: number) => Math.floor((numerator + Math.floor(denominator / 2)) / denominator);
+
+function lineTotal(item: CartItem, rules: TaxRule[]) {
+  const subtotalCents = roundHalfUp(item.quantityMilliunits * item.unitPriceCents, 1000);
+  let taxCents = 0;
+  for (const rule of [...rules].sort((a, b) => a.priority - b.priority)) {
+    if (rule.appliesTo !== 'ALL' && !(rule.appliesTo === 'PRODUCT' && rule.referenceId === item.id) && !(rule.appliesTo === 'CATEGORY' && rule.referenceId === item.categoryId)) continue;
+    taxCents += roundHalfUp((rule.compound ? subtotalCents + taxCents : subtotalCents) * rule.rateBps, 10_000);
+  }
+  return { subtotalCents, taxCents, totalCents: subtotalCents + taxCents };
 }
 
 const POS: React.FC = () => {
-  const { settings } = useSettings();
+  const [catalog, setCatalog] = useState<Catalog | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [barcode, setBarcode] = useState('');
-  const [subtotal, setSubtotal] = useState(0);
-  const [tax, setTax] = useState(0);
-  const [total, setTotal] = useState(0);
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [message, setMessage] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [online, setOnline] = useState(navigator.onLine);
+  const [cashReceived, setCashReceived] = useState(false);
+  const [tenderMode, setTenderMode] = useState<TenderMode>('CASH');
+  const [splitCashCents, setSplitCashCents] = useState(0);
+  const [giftCardCode, setGiftCardCode] = useState('');
+  const [pendingCheckoutId, setPendingCheckoutId] = useState('');
+  const locationId = localStorage.getItem('posLocationId') ?? '';
+  const shiftId = localStorage.getItem('posShiftId') ?? '';
+  const workstationDeviceId = localStorage.getItem('posWorkstationDeviceId') ?? '';
+  const readerDeviceId = localStorage.getItem('posReaderDeviceId') ?? '';
+  const token = localStorage.getItem('accessToken') ?? '';
 
+  const loadCatalog = useCallback(async () => {
+    if (!locationId || !token) return;
+    const response = await fetch(`/api/v1/operations/locations/${locationId}/catalog`, { headers: { Authorization: `Bearer ${token}` } });
+    const body = await response.json();
+    if (!response.ok) throw new Error(body.message ?? 'Catalog unavailable');
+    setCatalog(body.data);
+  }, [locationId, token]);
+
+  useEffect(() => { loadCatalog().catch((error) => setMessage(error.message)); }, [loadCatalog]);
   useEffect(() => {
-    const newSubtotal = cart.reduce((sum, item) => sum + item.total, 0);
-    const taxRate = settings.store.taxRate / 100; // Convert percentage to decimal
-    const newTax = newSubtotal * taxRate;
-    setSubtotal(newSubtotal);
-    setTax(newTax);
-    setTotal(newSubtotal + newTax);
-  }, [cart, settings.store.taxRate]);
+    const changed = () => setOnline(navigator.onLine);
+    window.addEventListener('online', changed); window.addEventListener('offline', changed);
+    return () => { window.removeEventListener('online', changed); window.removeEventListener('offline', changed); };
+  }, []);
 
-  const addToCart = (product: any) => {
-    const existingItem = cart.find(item => item.id === product.id);
-    
-    if (existingItem) {
-      setCart(cart.map(item =>
-        item.id === product.id
-          ? { ...item, quantity: item.quantity + 1, total: (item.quantity + 1) * item.price }
-          : item
-      ));
-    } else {
-      setCart([...cart, {
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        quantity: 1,
-        total: product.price
-      }]);
-    }
+  const totals = useMemo(() => cart.reduce((sum, item) => {
+    const line = lineTotal(item, catalog?.taxProfile.rules ?? []);
+    return { subtotalCents: sum.subtotalCents + line.subtotalCents, taxCents: sum.taxCents + line.taxCents, totalCents: sum.totalCents + line.totalCents };
+  }, { subtotalCents: 0, taxCents: 0, totalCents: 0 }), [cart, catalog]);
+
+  const add = (product: CatalogProduct) => setCart((current) => {
+    const existing = current.find((item) => item.id === product.id);
+    if (existing) return current.map((item) => item.id === product.id ? { ...item, quantityMilliunits: Math.min(item.availableMilliunits, item.quantityMilliunits + 1000) } : item);
+    return [...current, { ...product, quantityMilliunits: 1000 }];
+  });
+
+  const submitBarcode = (event: React.FormEvent) => {
+    event.preventDefault();
+    const product = catalog?.products.find((item) => item.barcode === barcode.trim() || item.sku === barcode.trim());
+    if (!product) setMessage('Barcode/SKU not found in the current location catalog.'); else add(product);
+    setBarcode('');
   };
 
-  const updateQuantity = (id: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(id);
-      return;
-    }
-
-    setCart(cart.map(item =>
-      item.id === id
-        ? { ...item, quantity, total: quantity * item.price }
-        : item
-    ));
+  const nextOfflineSequence = () => {
+    const key = `posOfflineSequence:${workstationDeviceId}`;
+    const next = Number(localStorage.getItem(key) ?? '0') + 1;
+    localStorage.setItem(key, String(next));
+    return next;
   };
 
-  const removeFromCart = (id: string) => {
-    setCart(cart.filter(item => item.id !== id));
+  const envelope = (source: 'ONLINE' | 'OFFLINE') => {
+    if (!catalog || !locationId || !shiftId || !workstationDeviceId) throw new Error('Location, shift, and workstation must be configured before checkout.');
+    const idempotencyKey = crypto.randomUUID();
+    const tenders = source === 'OFFLINE' || tenderMode === 'CASH'
+      ? [{ method: 'CASH' as const, amountCents: totals.totalCents }]
+      : tenderMode === 'CARD_PRESENT'
+        ? [{ method: 'CARD_PRESENT' as const, amountCents: totals.totalCents, readerDeviceId }]
+        : tenderMode === 'GIFT_CARD'
+          ? [{ method: 'GIFT_CARD' as const, amountCents: totals.totalCents, giftCardCode: giftCardCode.trim() }]
+          : [{ method: 'CASH' as const, amountCents: splitCashCents }, { method: 'CARD_PRESENT' as const, amountCents: totals.totalCents - splitCashCents, readerDeviceId }];
+    return {
+      locationId, shiftId, workstationDeviceId, idempotencyKey, source,
+      ...(source === 'OFFLINE' ? { offlineSequence: nextOfflineSequence(), capturedAt: new Date().toISOString(), expectedTotalCents: totals.totalCents, expectedTaxProfileVersion: catalog.taxProfile.version } : {}),
+      items: cart.map((item) => ({ productId: item.id, quantityMilliunits: item.quantityMilliunits })),
+      tenders,
+    };
   };
 
-  const clearCart = () => {
-    setCart([]);
-  };
-
-  const handleBarcodeSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!barcode.trim()) return;
-
+  const onlineCheckout = async () => {
+    setBusy(true); setMessage('');
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch(`/api/v1/products/barcode/${barcode}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          addToCart({
-            id: data.data.product.id,
-            name: data.data.product.name,
-            price: Number(data.data.product.price)
-          });
-        }
+      if ((tenderMode === 'CARD_PRESENT' || tenderMode === 'SPLIT_CASH_CARD') && !readerDeviceId) throw new Error('Configure an enrolled reader before card-present checkout.');
+      if (tenderMode === 'SPLIT_CASH_CARD' && (!Number.isInteger(splitCashCents) || splitCashCents <= 0 || splitCashCents >= totals.totalCents)) throw new Error('Split cash must be positive whole cents and less than the total.');
+      if (tenderMode === 'GIFT_CARD' && !giftCardCode.trim()) throw new Error('Enter the gift-card code.');
+      const response = await fetch('/api/v1/operations/checkouts', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(envelope('ONLINE')) });
+      const body = await response.json();
+      if (!response.ok) throw new Error(`${body.code ?? 'CHECKOUT_FAILED'}: ${body.message ?? 'Checkout failed'}`);
+      if (body.data.checkout.status === 'COMPLETED') {
+        setCart([]); setGiftCardCode(''); setSplitCashCents(0); setPendingCheckoutId(''); setMessage(`Completed ${body.data.checkout.receiptNumber}; receipt and drawer jobs are queued.`); await loadCatalog();
       } else {
-        console.error('Product not found');
+        setPendingCheckoutId(body.data.checkout.id); setMessage('Reader payment is in progress. Ask the customer to present a card, then verify the provider result. Do not start another checkout.');
       }
-      setBarcode('');
-    } catch (error) {
-      console.error('Error looking up product:', error);
-    }
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'Checkout failed'); } finally { setBusy(false); }
   };
 
-  const handleCheckout = async () => {
-    if (cart.length === 0) return;
-
+  const verifyCardPayment = async () => {
+    if (!pendingCheckoutId) return;
+    setBusy(true); setMessage('');
     try {
-      const token = localStorage.getItem('accessToken');
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      
-      const saleData = {
-        userId: user.id,
-        items: cart.map(item => ({
-          productId: item.id,
-          quantity: item.quantity,
-          unitPrice: item.price,
-          taxRate: settings.store.taxRate
-        })),
-        payments: [{
-          amount: total,
-          method: 'CASH'
-        }]
-      };
-
-      const response = await fetch('/api/v1/sales', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(saleData)
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          console.log('Sale completed:', data.data.sale);
-          
-          // Auto-print receipt if enabled in settings
-          if (settings.pos.autoPrint) {
-            console.log('Auto-printing receipt...');
-            // TODO: Implement actual printing functionality
-          }
-          
-          clearCart();
-          alert(`Sale completed successfully! ${settings.pos.receiptFooter}`);
-        }
-      } else {
-        console.error('Checkout failed');
-        alert('Checkout failed. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error processing checkout:', error);
-      alert('Checkout failed. Please try again.');
-    }
+      const response = await fetch(`/api/v1/operations/checkouts/${pendingCheckoutId}/retry-payment`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: '{}' });
+      const body = await response.json();
+      if (!response.ok) throw new Error(`${body.code ?? 'PAYMENT_RECOVERY_FAILED'}: ${body.message ?? 'Payment recovery failed'}`);
+      if (body.data.checkout.status === 'COMPLETED') {
+        setCart([]); setSplitCashCents(0); setPendingCheckoutId(''); setMessage(`Completed ${body.data.checkout.receiptNumber}; tokenized card result and receipt are durable.`); await loadCatalog();
+      } else setMessage('The provider has not completed payment. Follow the reader prompt and verify again; do not create a second checkout.');
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'Payment recovery failed'); } finally { setBusy(false); }
   };
 
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-screen">
-      {/* Product Search & Selection */}
-      <div className="lg:col-span-2 bg-white rounded-lg shadow p-6">
-        <div className="mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Product Search</h2>
-          
-          {/* Barcode Scanner */}
-          <form onSubmit={handleBarcodeSubmit} className="mb-4">
-            <div className="flex">
-              <input
-                type="text"
-                value={barcode}
-                onChange={(e) => setBarcode(e.target.value)}
-                placeholder="Scan or enter barcode..."
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-r-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                Add
-              </button>
-            </div>
-          </form>
+  const offlineCheckout = async () => {
+    if (!cashReceived) return setMessage('Confirm that cash was physically received before recording an offline sale.');
+    setBusy(true); setMessage('');
+    try {
+      const value = envelope('OFFLINE') as OfflineCheckoutEnvelope;
+      await enqueueOfflineCheckout(value);
+      setCart([]); setCashReceived(false); setMessage(`Encrypted offline cash sale queued as ${value.idempotencyKey}. Card and gift-card tender are unavailable offline.`);
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'Offline capture failed'); } finally { setBusy(false); }
+  };
 
-          {/* Category Filter */}
-          <div className="mb-4">
-            <div className="flex flex-wrap gap-2">
-              {['All', 'Food', 'Beverages', 'Snacks'].map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
-                  className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                    selectedCategory === category
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
-          </div>
+  const syncOffline = async () => {
+    if (!online || !workstationDeviceId) return;
+    setBusy(true); setMessage('');
+    try {
+      const queued = await pendingOfflineCheckouts(workstationDeviceId);
+      let synced = 0;
+      for (const value of queued) {
+        const response = await fetch('/api/v1/operations/checkouts', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(value) });
+        if (!response.ok) {
+          const body = await response.json();
+          throw new Error(`${body.code ?? 'OFFLINE_SYNC_BLOCKED'}: ${body.message ?? 'Manager review required'}`);
+        }
+        await removeOfflineCheckout(value.idempotencyKey); synced += 1;
+      }
+      setMessage(`${synced} offline sale(s) synchronized idempotently.`); await loadCatalog();
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'Offline synchronization failed'); } finally { setBusy(false); }
+  };
 
-          {/* Quick Add Buttons - Sample Products */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {[
-              { 
-                id: '1', 
-                name: 'Coffee', 
-                price: 3.50, 
-                image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=150&h=150&fit=crop&crop=center',
-                category: 'Beverages'
-              },
-              { 
-                id: '2', 
-                name: 'Sandwich', 
-                price: 8.99, 
-                image: 'https://images.unsplash.com/photo-1553909489-cd47e0ef937f?w=150&h=150&fit=crop&crop=center',
-                category: 'Food'
-              },
-              { 
-                id: '3', 
-                name: 'Soda', 
-                price: 2.25, 
-                image: 'https://images.unsplash.com/photo-1581636625402-29b2a704ef13?w=150&h=150&fit=crop&crop=center',
-                category: 'Beverages'
-              },
-              { 
-                id: '4', 
-                name: 'Chips', 
-                price: 1.99, 
-                image: 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=150&h=150&fit=crop&crop=center',
-                category: 'Snacks'
-              },
-              { 
-                id: '5', 
-                name: 'Water', 
-                price: 1.50, 
-                image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=150&h=150&fit=crop&crop=center',
-                category: 'Beverages'
-              },
-              { 
-                id: '6', 
-                name: 'Candy', 
-                price: 0.99, 
-                image: 'https://images.unsplash.com/photo-1575224300306-1b8da36134ec?w=150&h=150&fit=crop&crop=center',
-                category: 'Snacks'
-              },
-              { 
-                id: '7', 
-                name: 'Pizza Slice', 
-                price: 4.50, 
-                image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=150&h=150&fit=crop&crop=center',
-                category: 'Food'
-              },
-              { 
-                id: '8', 
-                name: 'Energy Drink', 
-                price: 3.25, 
-                image: 'https://images.unsplash.com/photo-1622543925917-763c34d1a86e?w=150&h=150&fit=crop&crop=center',
-                category: 'Beverages'
-              },
-              { 
-                id: '9', 
-                name: 'Donut', 
-                price: 2.50, 
-                image: 'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=150&h=150&fit=crop&crop=center',
-                category: 'Food'
-              },
-              { 
-                id: '10', 
-                name: 'Ice Cream', 
-                price: 4.99, 
-                image: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=150&h=150&fit=crop&crop=center',
-                category: 'Food'
-              },
-              { 
-                id: '11', 
-                name: 'Cookies', 
-                price: 3.75, 
-                image: 'https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=150&h=150&fit=crop&crop=center',
-                category: 'Snacks'
-              },
-              { 
-                id: '12', 
-                name: 'Juice', 
-                price: 2.99, 
-                image: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=150&h=150&fit=crop&crop=center',
-                category: 'Beverages'
-              },
-              { 
-                id: '13', 
-                name: 'Burger', 
-                price: 12.99, 
-                image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=150&h=150&fit=crop&crop=center',
-                category: 'Food'
-              },
-              { 
-                id: '14', 
-                name: 'Salad', 
-                price: 7.50, 
-                image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=150&h=150&fit=crop&crop=center',
-                category: 'Food'
-              },
-              { 
-                id: '15', 
-                name: 'Muffin', 
-                price: 3.25, 
-                image: 'https://images.unsplash.com/photo-1607958996333-41aef7caefaa?w=150&h=150&fit=crop&crop=center',
-                category: 'Food'
-              },
-              { 
-                id: '16', 
-                name: 'Nuts', 
-                price: 4.25, 
-                image: 'https://images.unsplash.com/photo-1508747703725-719777637510?w=150&h=150&fit=crop&crop=center',
-                category: 'Snacks'
-              },
-              { 
-                id: '17', 
-                name: 'Yogurt', 
-                price: 2.75, 
-                image: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=150&h=150&fit=crop&crop=center',
-                category: 'Food'
-              },
-              { 
-                id: '18', 
-                name: 'Tea', 
-                price: 2.50, 
-                image: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=150&h=150&fit=crop&crop=center',
-                category: 'Beverages'
-              },
-              { 
-                id: '19', 
-                name: 'Croissant', 
-                price: 3.99, 
-                image: 'https://images.unsplash.com/photo-1555507036-ab794f4afe5a?w=150&h=150&fit=crop&crop=center',
-                category: 'Food'
-              },
-              { 
-                id: '20', 
-                name: 'Smoothie', 
-                price: 5.50, 
-                image: 'https://images.unsplash.com/photo-1505252585461-04db1eb84625?w=150&h=150&fit=crop&crop=center',
-                category: 'Beverages'
-              },
-            ].filter(product => selectedCategory === 'All' || product.category === selectedCategory).map((product) => (
-              <button
-                key={product.id}
-                onClick={() => addToCart(product)}
-                className="p-3 bg-white rounded-lg hover:bg-gray-50 transition-colors text-left shadow-sm border border-gray-200 group"
-              >
-                <div className="aspect-square mb-2 overflow-hidden rounded-md">
-                  <img 
-                    src={product.image} 
-                    alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = `https://placehold.co/150x150/e5e7eb/6b7280/png?text=${encodeURIComponent(product.name)}`;
-                    }}
-                  />
-                </div>
-                <div className="font-medium text-gray-900 text-sm truncate">{product.name}</div>
-                <div className="text-xs text-gray-500 mb-1">{product.category}</div>
-                <div className="text-sm font-semibold text-blue-600">${product.price.toFixed(2)}</div>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+  if (!locationId || !shiftId || !workstationDeviceId) return <div className="rounded-lg bg-amber-50 p-6 text-amber-900"><h1 className="text-xl font-semibold">Store operations setup required</h1><p>Set the provisioned location, open shift, and enrolled workstation identifiers before using checkout. The legacy client-priced checkout is disabled.</p></div>;
 
-      {/* Cart & Checkout */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Cart</h2>
-          {cart.length > 0 && (
-            <button
-              onClick={clearCart}
-              className="text-sm text-red-600 hover:text-red-700"
-            >
-              Clear All
-            </button>
-          )}
-        </div>
-
-        {/* Cart Items */}
-        <div className="space-y-3 mb-6 max-h-96 overflow-y-auto">
-          {cart.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">Cart is empty</p>
-          ) : (
-            cart.map((item) => (
-              <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex-1">
-                  <div className="font-medium text-gray-900">{item.name}</div>
-                  <div className="text-sm text-gray-600">${item.price.toFixed(2)} each</div>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                    className="p-1 text-gray-400 hover:text-gray-600"
-                  >
-                    <MinusIcon className="h-4 w-4" />
-                  </button>
-                  
-                  <span className="w-8 text-center font-medium">{item.quantity}</span>
-                  
-                  <button
-                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                    className="p-1 text-gray-400 hover:text-gray-600"
-                  >
-                    <PlusIcon className="h-4 w-4" />
-                  </button>
-                  
-                  <button
-                    onClick={() => removeFromCart(item.id)}
-                    className="p-1 text-red-400 hover:text-red-600 ml-2"
-                  >
-                    <TrashIcon className="h-4 w-4" />
-                  </button>
-                </div>
-                
-                <div className="ml-4 font-medium text-gray-900">
-                  ${item.total.toFixed(2)}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* Totals */}
-        {cart.length > 0 && (
-          <div className="border-t pt-4 space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Subtotal:</span>
-              <span className="font-medium">${subtotal.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Tax:</span>
-              <span className="font-medium">${tax.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-lg font-semibold border-t pt-2">
-              <span>Total:</span>
-              <span>${total.toFixed(2)}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Checkout Button */}
-        <button
-          onClick={handleCheckout}
-          disabled={cart.length === 0}
-          className="w-full mt-6 px-4 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-        >
-          Checkout
-        </button>
-      </div>
-    </div>
-  );
+  return <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <section className="rounded-lg bg-white p-6 shadow lg:col-span-2">
+      <div className="mb-4 flex items-center justify-between"><div><h1 className="text-xl font-semibold">Controlled checkout</h1><p className="text-sm text-gray-500">{catalog?.taxProfile.jurisdictionCode} · tax profile v{catalog?.taxProfile.version} · {catalog?.location.fiscalMode}</p></div><span className={`rounded px-2 py-1 text-sm ${online ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-900'}`}>{online ? 'Online' : 'Offline cash-only'}</span></div>
+      <form onSubmit={submitBarcode} className="mb-4 flex"><input value={barcode} onChange={(event) => setBarcode(event.target.value)} placeholder="Scan barcode or SKU" className="flex-1 rounded-l border px-3 py-2"/><button className="rounded-r bg-blue-600 px-4 text-white">Add</button></form>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">{catalog?.products.map((product) => <button key={product.id} onClick={() => add(product)} disabled={product.availableMilliunits < 1000} className="rounded border p-3 text-left disabled:opacity-40"><div className="font-medium">{product.name}</div><div className="text-sm text-gray-500">{product.sku}</div><div className="font-semibold text-blue-700">${(product.unitPriceCents / 100).toFixed(2)}</div><div className="text-xs">Available {(product.availableMilliunits / 1000).toFixed(3)}</div></button>)}</div>
+    </section>
+    <section className="rounded-lg bg-white p-6 shadow"><h2 className="mb-4 text-lg font-semibold">Cart</h2><div className="space-y-3">{cart.map((item) => <div key={item.id} className="rounded bg-gray-50 p-3"><div className="flex justify-between"><span>{item.name}</span><button onClick={() => setCart((current) => current.filter((row) => row.id !== item.id))}><TrashIcon className="h-4 w-4 text-red-500"/></button></div><div className="mt-2 flex items-center gap-3"><button onClick={() => setCart((current) => current.map((row) => row.id === item.id ? { ...row, quantityMilliunits: Math.max(1000, row.quantityMilliunits - 1000) } : row))}><MinusIcon className="h-4 w-4"/></button><span>{(item.quantityMilliunits / 1000).toFixed(3)}</span><button onClick={() => add(item)}><PlusIcon className="h-4 w-4"/></button><span className="ml-auto">${(lineTotal(item, catalog?.taxProfile.rules ?? []).totalCents / 100).toFixed(2)}</span></div></div>)}</div>
+      <div className="mt-4 border-t pt-3 text-sm"><div className="flex justify-between"><span>Subtotal</span><span>${(totals.subtotalCents / 100).toFixed(2)}</span></div><div className="flex justify-between"><span>Tax</span><span>${(totals.taxCents / 100).toFixed(2)}</span></div><div className="mt-2 flex justify-between text-lg font-semibold"><span>Total</span><span>${(totals.totalCents / 100).toFixed(2)}</span></div></div>
+      {online ? <><label className="mt-5 block text-sm font-medium">Tender<select value={tenderMode} disabled={Boolean(pendingCheckoutId)} onChange={(event) => setTenderMode(event.target.value as TenderMode)} className="mt-1 w-full rounded border px-3 py-2"><option value="CASH">Cash</option><option value="CARD_PRESENT">Card present</option><option value="GIFT_CARD">Gift card</option><option value="SPLIT_CASH_CARD">Split cash + card</option></select></label>{tenderMode === 'SPLIT_CASH_CARD' && <label className="mt-2 block text-sm">Cash amount (cents)<input type="number" min="1" step="1" value={splitCashCents} onChange={(event) => setSplitCashCents(Number(event.target.value))} className="mt-1 w-full rounded border px-3 py-2"/></label>}{tenderMode === 'GIFT_CARD' && <label className="mt-2 block text-sm">Gift-card code<input value={giftCardCode} onChange={(event) => setGiftCardCode(event.target.value)} autoComplete="off" className="mt-1 w-full rounded border px-3 py-2"/></label>}<button disabled={!cart.length || busy || Boolean(pendingCheckoutId)} onClick={onlineCheckout} className="mt-3 w-full rounded bg-green-600 py-3 font-medium text-white disabled:bg-gray-300">Start controlled checkout</button>{pendingCheckoutId && <button disabled={busy} onClick={verifyCardPayment} className="mt-2 w-full rounded bg-blue-700 py-3 font-medium text-white disabled:bg-gray-300">Verify reader payment</button>}</> : <><label className="mt-5 flex gap-2 text-sm"><input type="checkbox" checked={cashReceived} onChange={(event) => setCashReceived(event.target.checked)}/>Cash has been physically received</label><button disabled={!cart.length || busy} onClick={offlineCheckout} className="mt-2 w-full rounded bg-amber-600 py-3 font-medium text-white disabled:bg-gray-300">Record encrypted offline cash sale</button></>}
+      {online && <button disabled={busy} onClick={syncOffline} className="mt-2 w-full rounded border border-blue-600 py-2 text-blue-700">Synchronize offline queue</button>}
+      {message && <p className="mt-4 rounded bg-blue-50 p-3 text-sm text-blue-900">{message}</p>}
+    </section>
+  </div>;
 };
 
 export default POS;

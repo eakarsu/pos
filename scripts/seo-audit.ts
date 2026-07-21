@@ -104,7 +104,7 @@ async function runSEOAudit(): Promise<SEOAuditResult> {
   const packageJsonPath = resolve(process.cwd(), 'package.json');
   if (existsSync(packageJsonPath)) {
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
-    const seoDeps = ['react-helmet-async', 'sitemap', 'next-sitemap'];
+    const seoDeps = ['sitemap'];
     const missingDeps = seoDeps.filter(dep => 
       !packageJson.dependencies?.[dep] && !packageJson.devDependencies?.[dep]
     );

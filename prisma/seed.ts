@@ -4,12 +4,19 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
+  if (process.env.ALLOW_DISPOSABLE_SEED !== 'YES') {
+    throw new Error('Seeding is disabled; set ALLOW_DISPOSABLE_SEED=YES only for a disposable database');
+  }
+  const seedPassword = process.env.SEED_USER_PASSWORD || '';
+  if (seedPassword.length < 16) {
+    throw new Error('SEED_USER_PASSWORD must contain at least 16 characters');
+  }
   console.log('🌱 Starting database seed...');
 
   // Create users (5 total)
-  const hashedPassword = await bcrypt.hash('admin123', 12);
-  const cashierPassword = await bcrypt.hash('cashier123', 12);
-  const managerPassword = await bcrypt.hash('manager123', 12);
+  const hashedPassword = await bcrypt.hash(seedPassword, 12);
+  const cashierPassword = hashedPassword;
+  const managerPassword = hashedPassword;
 
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@pos.com' },

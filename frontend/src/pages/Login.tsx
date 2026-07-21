@@ -5,19 +5,15 @@ import { apiService } from '../utils/api';
 import { useAuth } from '../utils/AuthContext';
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState('admin@pos.com');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login, isAuthenticated, isLoading, user } = useAuth();
 
-  console.log('Login component - isAuthenticated:', isAuthenticated, 'isLoading:', isLoading);
-
   useEffect(() => {
-    console.log('Login useEffect - isAuthenticated:', isAuthenticated, 'isLoading:', isLoading);
     // Only redirect if we're absolutely sure the user is authenticated and not loading
     if (isAuthenticated && !isLoading && user) {
-      console.log('Login: Redirecting authenticated user to dashboard');
       navigate('/app/dashboard', { replace: true });
     }
   }, [isAuthenticated, isLoading, navigate, user]);
@@ -94,11 +90,6 @@ const Login: React.FC = () => {
             </Link>
           </div>
 
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Default login: admin@pos.com / admin123
-            </p>
-          </div>
         </form>
       </div>
     </div>

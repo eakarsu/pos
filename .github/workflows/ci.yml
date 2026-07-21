@@ -1,0 +1,49 @@
+name: ci
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci-${{ github.run_id }}-${{ github.run_attempt }}
+          POSTGRES_DB: pos_operations_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d pos_operations_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:ci-${{ github.run_id }}-${{ github.run_attempt }}@127.0.0.1:5432/pos_operations_test
+      JWT_SECRET: ci-jwt-${{ github.run_id }}-${{ github.run_attempt }}-at-least-32-characters
+      JWT_REFRESH_SECRET: ci-refresh-${{ github.run_id }}-${{ github.run_attempt }}-at-least-32-characters
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm ci --prefix frontend
+      - run: npm run db:generate
+      - run: npm run db:migrate:deploy
+      - run: npm run db:migrate:status
+      - run: npm run test:safety
+      - run: npm run test:operations
+      - run: npm run build
+      - run: npm run build --prefix frontend
+      - run: npm audit --audit-level=low
+      - run: npm audit --prefix frontend --audit-level=low
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

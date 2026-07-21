@@ -12,12 +12,17 @@
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
+    "create-admin": "tsx scripts/create-admin.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:integration": "jest tests/integration",
     "test:coverage": "jest --coverage",
     "test:setup": "npx prisma db push --force-reset && npx prisma db seed",
     "test:email": "node test-email.js",
+    "test:safety": "node --test tests/safety/*.test.mjs",
+    "test:operations": "NODE_ENV=test PAYMENT_PROVIDER=simulator node --import tsx --test --test-concurrency=1 tests/operations/*.test.ts",
+    "db:migrate:deploy": "prisma migrate deploy",
+    "db:migrate:status": "prisma migrate status",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix"
   },
@@ -49,20 +54,17 @@
     "joi": "^17.11.0",
     "jsonwebtoken": "^9.0.2",
     "moment": "^2.29.4",
-    "multer": "^1.4.5-lts.1",
-    "next-sitemap": "^4.2.3",
-    "nodemailer": "^7.0.3",
+    "nodemailer": "9.0.3",
     "openai": "^6.35.0",
     "pdf-lib": "^1.17.1",
     "qrcode": "^1.5.3",
-    "react-helmet-async": "^2.0.5",
     "redis": "^4.6.11",
     "sitemap": "^8.0.0",
     "socket.io": "^4.7.4",
     "stripe": "^14.9.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
-    "uuid": "^9.0.1",
+    "uuid": "11.1.1",
     "winston": "^3.11.0"
   },
   "devDependencies": {
@@ -73,7 +75,6 @@
     "@types/express": "^4.17.21",
     "@types/jest": "^29.5.14",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/multer": "^1.4.11",
     "@types/node": "^20.10.4",
     "@types/nodemailer": "^6.4.17",
     "@types/supertest": "^2.0.12",
@@ -96,5 +97,8 @@
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.0.0"
+  },
+  "overrides": {
+    "minimatch": "9.0.9"
   }
 }

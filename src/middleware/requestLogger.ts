@@ -7,7 +7,7 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction): 
   // Log request
   logger.info('Incoming request:', {
     method: req.method,
-    url: req.url,
+    path: req.path,
     ip: req.ip,
     userAgent: req.get('User-Agent'),
   });
@@ -19,7 +19,7 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction): 
     
     logger.info('Request completed:', {
       method: req.method,
-      url: req.url,
+      path: req.path,
       statusCode: res.statusCode,
       duration: `${duration}ms`,
       ip: req.ip,

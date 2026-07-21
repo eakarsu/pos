@@ -15,6 +15,7 @@ import systemRoutes from './system';
 import contactRoutes from './contact';
 import aiRoutes from './ai';
 import marginLeakRoutes from './marginLeak';
+import operationsRoutes from './operations';
 
 const router = Router();
 
@@ -58,6 +59,7 @@ router.get('/', (req, res) => {
 
 // Route modules
 router.use(`/api/v1/auth`, authRoutes);
+router.use(`/api/auth`, authRoutes);
 router.use(`/api/v1/products`, productRoutes);
 router.use(`/api/v1/sales`, salesRoutes);
 router.use(`/api/v1/customers`, customerRoutes);
@@ -65,10 +67,12 @@ router.use(`/api/v1/inventory`, inventoryRoutes);
 router.use(`/api/v1/reports`, reportRoutes);
 router.use(`/api/v1/categories`, categoryRoutes);
 router.use(`/api/v1/dashboard`, dashboardRoutes);
+router.use(`/api/dashboard`, dashboardRoutes);
 router.use(`/api/v1/settings`, settingsRoutes);
 router.use(`/api/v1/system`, systemRoutes);
 router.use(`/api/contact`, contactRoutes);
 router.use(`/api/v1/ai`, aiRoutes);
 router.use(`/api/v1/margin-leak`, marginLeakRoutes);
+router.use(`/api/v1/operations`, operationsRoutes);
 
 export default router;

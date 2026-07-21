@@ -21,10 +21,16 @@ const requireAdmin = (req: any, res: any, next: any) => {
 router.use(requireAdmin);
 
 // System management routes
-router.post('/backup', systemController.backupDatabase);
-router.get('/backup/:filename', systemController.downloadBackup);
-router.post('/export', systemController.exportData);
-router.get('/export/:filename', systemController.downloadExport);
+const retiredArtifactEndpoint = (_req: any, res: any) => res.status(410).json({
+  success: false,
+  code: 'REPOSITORY_ARTIFACT_WORKFLOW_RETIRED',
+  message: 'In-process backup/export artifacts are disabled. Use the operator-controlled PostgreSQL backup and audit-export runbooks.',
+});
+
+router.post('/backup', retiredArtifactEndpoint);
+router.get('/backup/:filename', retiredArtifactEndpoint);
+router.post('/export', retiredArtifactEndpoint);
+router.get('/export/:filename', retiredArtifactEndpoint);
 router.get('/logs', systemController.getSystemLogs);
 router.post('/clear-cache', systemController.clearCache);
 router.get('/info', systemController.getSystemInfo);

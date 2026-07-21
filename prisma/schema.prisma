@@ -12,40 +12,47 @@ datasource db {
 
 // User Management
 model User {
-  id          String   @id @default(cuid())
-  email       String   @unique
-  username    String   @unique
-  firstName   String
-  lastName    String
-  password    String
-  role        String   @default("CASHIER") // ADMIN, MANAGER, CASHIER, CUSTOMER
-  isActive    Boolean  @default(true)
-  lastLogin   DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String    @id @default(cuid())
+  email     String    @unique
+  username  String    @unique
+  firstName String
+  lastName  String
+  password  String
+  role      String    @default("CASHIER") // ADMIN, MANAGER, CASHIER, CUSTOMER
+  isActive  Boolean   @default(true)
+  lastLogin DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   // Employee specific fields
-  employeeId  String?  @unique
-  phone       String?
-  address     String?
-  hireDate    DateTime?
-  salary      Float?
-  commission  Float?   @default(0)
+  employeeId String?   @unique
+  phone      String?
+  address    String?
+  hireDate   DateTime?
+  salary     Float?
+  commission Float?    @default(0)
 
   // Password reset
-  passwordResetToken    String?   @unique
-  passwordResetExpires  DateTime?
+  passwordResetToken   String?   @unique
+  passwordResetExpires DateTime?
 
   // Email verification
-  emailVerified          Boolean   @default(false)
-  emailVerificationToken String?   @unique
+  emailVerified          Boolean @default(false)
+  emailVerificationToken String? @unique
 
   // Relations
-  sales       Sale[]
-  shifts      Shift[]
-  auditLogs   AuditLog[]
-  refreshTokens RefreshToken[]
-  inventoryMovements InventoryMovement[]
+  sales                   Sale[]
+  shifts                  Shift[]
+  auditLogs               AuditLog[]
+  refreshTokens           RefreshToken[]
+  inventoryMovements      InventoryMovement[]
+  registerShifts          RegisterShift[]
+  operationalCheckouts    OperationalCheckout[]
+  approvedTaxExemptions   TaxExemption[]        @relation("TaxExemptionApprover")
+  requestedRefunds        RefundCase[]          @relation("RefundRequester")
+  approvedRefunds         RefundCase[]          @relation("RefundApprover")
+  approvedRegisterShifts  RegisterShift[]       @relation("RegisterShiftApprover")
+  approvedReconciliations ReconciliationRun[]   @relation("ReconciliationApprover")
 
   @@map("users")
 }
@@ -64,25 +71,27 @@ model RefreshToken {
 
 // Customer Management
 model Customer {
-  id          String   @id @default(cuid())
-  email       String?  @unique
-  phone       String?  @unique
-  firstName   String
-  lastName    String
-  dateOfBirth DateTime?
-  address     String?
-  city        String?
-  state       String?
-  zipCode     String?
-  loyaltyPoints Int    @default(0)
-  totalSpent  Float    @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String    @id @default(cuid())
+  email         String?   @unique
+  phone         String?   @unique
+  firstName     String
+  lastName      String
+  dateOfBirth   DateTime?
+  address       String?
+  city          String?
+  state         String?
+  zipCode       String?
+  loyaltyPoints Int       @default(0)
+  totalSpent    Float     @default(0)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   // Relations
-  sales       Sale[]
-  loyaltyTransactions LoyaltyTransaction[]
+  sales                Sale[]
+  loyaltyTransactions  LoyaltyTransaction[]
+  operationalCheckouts OperationalCheckout[]
+  taxExemptions        TaxExemption[]
 
   @@map("customers")
 }
@@ -97,37 +106,39 @@ model Category {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  products    Product[]
+  products Product[]
 
   @@map("categories")
 }
 
 model Product {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  sku         String   @unique
-  barcode     String?  @unique
-  price       Float
-  cost        Float    @default(0)
-  taxRate     Float    @default(0)
-  isActive    Boolean  @default(true)
-  isWeighed   Boolean  @default(false)
-  minStock    Int      @default(0)
-  maxStock    Int?
-  reorderPoint Int     @default(0)
-  categoryId  String?
-  supplierId  String?
-  imageUrl    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  sku          String   @unique
+  barcode      String?  @unique
+  price        Float
+  cost         Float    @default(0)
+  taxRate      Float    @default(0)
+  isActive     Boolean  @default(true)
+  isWeighed    Boolean  @default(false)
+  minStock     Int      @default(0)
+  maxStock     Int?
+  reorderPoint Int      @default(0)
+  categoryId   String?
+  supplierId   String?
+  imageUrl     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // Relations
-  category    Category? @relation(fields: [categoryId], references: [id])
-  supplier    Supplier? @relation(fields: [supplierId], references: [id])
-  variants    ProductVariant[]
-  inventory   InventoryItem[]
-  saleItems   SaleItem[]
+  category         Category?                 @relation(fields: [categoryId], references: [id])
+  supplier         Supplier?                 @relation(fields: [supplierId], references: [id])
+  variants         ProductVariant[]
+  inventory        InventoryItem[]
+  saleItems        SaleItem[]
+  operationalLines OperationalCheckoutLine[]
+  locationStocks   LocationStock[]
 
   @@map("products")
 }
@@ -135,8 +146,8 @@ model Product {
 model ProductVariant {
   id        String   @id @default(cuid())
   productId String
-  name      String   // e.g., "Size", "Color"
-  value     String   // e.g., "Large", "Red"
+  name      String // e.g., "Size", "Color"
+  value     String // e.g., "Large", "Red"
   sku       String   @unique
   barcode   String?  @unique
   price     Float?
@@ -146,7 +157,7 @@ model ProductVariant {
   updatedAt DateTime @updatedAt
 
   // Relations
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
   inventory InventoryItem[]
   saleItems SaleItem[]
 
@@ -169,111 +180,112 @@ model Supplier {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  products    Product[]
+  products Product[]
 
   @@map("suppliers")
 }
 
 // Inventory Management
 model InventoryItem {
-  id              String   @id @default(cuid())
-  productId       String?
-  variantId       String?
-  quantity        Int      @default(0)
-  reservedQty     Int      @default(0)
-  location        String?
-  batchNumber     String?
-  expirationDate  DateTime?
-  lastUpdated     DateTime @default(now())
-  createdAt       DateTime @default(now())
+  id             String    @id @default(cuid())
+  productId      String?
+  variantId      String?
+  quantity       Int       @default(0)
+  reservedQty    Int       @default(0)
+  location       String?
+  batchNumber    String?
+  expirationDate DateTime?
+  lastUpdated    DateTime  @default(now())
+  createdAt      DateTime  @default(now())
 
   // Relations
-  product         Product? @relation(fields: [productId], references: [id])
-  variant         ProductVariant? @relation(fields: [variantId], references: [id])
-  movements       InventoryMovement[]
+  product   Product?            @relation(fields: [productId], references: [id])
+  variant   ProductVariant?     @relation(fields: [variantId], references: [id])
+  movements InventoryMovement[]
 
   @@unique([productId, variantId, batchNumber])
   @@map("inventory_items")
 }
 
 model InventoryMovement {
-  id            String   @id @default(cuid())
-  inventoryId   String
-  type          String   // IN, OUT, ADJUSTMENT, TRANSFER
-  quantity      Int
-  reason        String?
-  referenceId   String?  // Sale ID, Purchase Order ID, etc.
-  userId        String?
-  createdAt     DateTime @default(now())
+  id          String   @id @default(cuid())
+  inventoryId String
+  type        String // IN, OUT, ADJUSTMENT, TRANSFER
+  quantity    Int
+  reason      String?
+  referenceId String? // Sale ID, Purchase Order ID, etc.
+  userId      String?
+  createdAt   DateTime @default(now())
 
   // Relations
-  inventory     InventoryItem @relation(fields: [inventoryId], references: [id])
-  user          User?         @relation(fields: [userId], references: [id])
+  inventory InventoryItem @relation(fields: [inventoryId], references: [id])
+  user      User?         @relation(fields: [userId], references: [id])
 
   @@map("inventory_movements")
 }
 
 // Sales Management
 model Sale {
-  id            String   @id @default(cuid())
-  saleNumber    String   @unique
-  customerId    String?
-  userId        String
-  subtotal      Float
-  taxAmount     Float
-  discountAmount Float   @default(0)
-  totalAmount   Float
-  status        String   @default("COMPLETED") // DRAFT, COMPLETED, CANCELLED, REFUNDED
-  paymentStatus String   @default("PAID") // PENDING, PAID, FAILED, REFUNDED, PARTIALLY_PAID
-  notes         String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id             String   @id @default(cuid())
+  saleNumber     String   @unique
+  customerId     String?
+  userId         String
+  subtotal       Float
+  taxAmount      Float
+  discountAmount Float    @default(0)
+  totalAmount    Float
+  status         String   @default("COMPLETED") // DRAFT, COMPLETED, CANCELLED, REFUNDED
+  paymentStatus  String   @default("PAID") // PENDING, PAID, FAILED, REFUNDED, PARTIALLY_PAID
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   // Relations
-  customer      Customer? @relation(fields: [customerId], references: [id])
-  user          User      @relation(fields: [userId], references: [id])
-  items         SaleItem[]
-  payments      Payment[]
-  returns       Return[]
+  customer            Customer?            @relation(fields: [customerId], references: [id])
+  user                User                 @relation(fields: [userId], references: [id])
+  items               SaleItem[]
+  payments            Payment[]
+  returns             Return[]
+  operationalCheckout OperationalCheckout?
 
   @@map("sales")
 }
 
 model SaleItem {
-  id          String   @id @default(cuid())
-  saleId      String
-  productId   String?
-  variantId   String?
-  quantity    Float
-  unitPrice   Float
-  discount    Float    @default(0)
-  taxRate     Float    @default(0)
-  totalPrice  Float
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  saleId     String
+  productId  String?
+  variantId  String?
+  quantity   Float
+  unitPrice  Float
+  discount   Float    @default(0)
+  taxRate    Float    @default(0)
+  totalPrice Float
+  createdAt  DateTime @default(now())
 
   // Relations
-  sale        Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
-  product     Product? @relation(fields: [productId], references: [id])
-  variant     ProductVariant? @relation(fields: [variantId], references: [id])
+  sale    Sale            @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product Product?        @relation(fields: [productId], references: [id])
+  variant ProductVariant? @relation(fields: [variantId], references: [id])
 
   @@map("sale_items")
 }
 
 // Payment Management
 model Payment {
-  id            String   @id @default(cuid())
-  saleId        String?
-  amount        Float
-  method        String   // CASH, CREDIT_CARD, DEBIT_CARD, MOBILE_PAYMENT, GIFT_CARD, STORE_CREDIT, CHECK
-  status        String   @default("PENDING") // PENDING, PAID, FAILED, REFUNDED, PARTIALLY_PAID
-  reference     String?  // Transaction ID, check number, etc.
+  id              String   @id @default(cuid())
+  saleId          String?
+  amount          Float
+  method          String // CASH, CREDIT_CARD, DEBIT_CARD, MOBILE_PAYMENT, GIFT_CARD, STORE_CREDIT, CHECK
+  status          String   @default("PENDING") // PENDING, PAID, FAILED, REFUNDED, PARTIALLY_PAID
+  reference       String? // Transaction ID, check number, etc.
   stripePaymentId String?
-  notes         String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
-  sale          Sale?    @relation(fields: [saleId], references: [id])
+  sale Sale? @relation(fields: [saleId], references: [id])
 
   @@map("payments")
 }
@@ -290,24 +302,24 @@ model Return {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  sale        Sale         @relation(fields: [saleId], references: [id])
-  items       ReturnItem[]
+  sale  Sale         @relation(fields: [saleId], references: [id])
+  items ReturnItem[]
 
   @@map("returns")
 }
 
 model ReturnItem {
-  id          String   @id @default(cuid())
-  returnId    String
-  productId   String?
-  variantId   String?
-  quantity    Float
-  unitPrice   Float
-  totalPrice  Float
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  returnId   String
+  productId  String?
+  variantId  String?
+  quantity   Float
+  unitPrice  Float
+  totalPrice Float
+  createdAt  DateTime @default(now())
 
   // Relations
-  return      Return   @relation(fields: [returnId], references: [id], onDelete: Cascade)
+  return Return @relation(fields: [returnId], references: [id], onDelete: Cascade)
 
   @@map("return_items")
 }
@@ -317,50 +329,50 @@ model LoyaltyTransaction {
   id          String   @id @default(cuid())
   customerId  String
   points      Int
-  type        String   // EARNED, REDEEMED, EXPIRED, ADJUSTMENT
+  type        String // EARNED, REDEEMED, EXPIRED, ADJUSTMENT
   description String?
-  referenceId String?  // Sale ID or other reference
+  referenceId String? // Sale ID or other reference
   createdAt   DateTime @default(now())
 
   // Relations
-  customer    Customer @relation(fields: [customerId], references: [id])
+  customer Customer @relation(fields: [customerId], references: [id])
 
   @@map("loyalty_transactions")
 }
 
 // Employee Management
 model Shift {
-  id        String    @id @default(cuid())
-  userId    String
-  startTime DateTime
-  endTime   DateTime?
-  breakTime Int       @default(0) // minutes
+  id         String    @id @default(cuid())
+  userId     String
+  startTime  DateTime
+  endTime    DateTime?
+  breakTime  Int       @default(0) // minutes
   totalHours Float?
-  notes     String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  notes      String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   // Relations
-  user      User      @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id])
 
   @@map("shifts")
 }
 
 // System Management
 model AuditLog {
-  id          String   @id @default(cuid())
-  userId      String?
-  action      String
-  tableName   String?
-  recordId    String?
-  oldValues   String?  // JSON as string
-  newValues   String?  // JSON as string
-  ipAddress   String?
-  userAgent   String?
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  tableName String?
+  recordId  String?
+  oldValues String? // JSON as string
+  newValues String? // JSON as string
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
 
   // Relations
-  user        User?    @relation(fields: [userId], references: [id])
+  user User? @relation(fields: [userId], references: [id])
 
   @@map("audit_logs")
 }
@@ -379,8 +391,8 @@ model SystemSetting {
 
 model AiInsight {
   id          String   @id @default(cuid())
-  type        String   // "sales", "inventory", "customers"
-  payload     String   // JSON string of the full AI response
+  type        String // "sales", "inventory", "customers"
+  payload     String // JSON string of the full AI response
   generatedAt DateTime @default(now())
 
   @@map("ai_insights")
@@ -389,20 +401,482 @@ model AiInsight {
 /// Generic AI results store — JSONB input + output for any AI feature.
 /// Used by copilot, reorder agent, elasticity, fraud scoring, etc.
 model AiResult {
-  id          String   @id @default(cuid())
-  feature     String   // "copilot", "reorder", "elasticity", "fraud", etc.
-  userId      String?
-  input       Json
-  output      Json
-  model       String?
-  tokensUsed  Int?
-  durationMs  Int?
-  status      String   @default("success") // success | error
+  id           String   @id @default(cuid())
+  feature      String // "copilot", "reorder", "elasticity", "fraud", etc.
+  userId       String?
+  input        Json
+  output       Json
+  model        String?
+  tokensUsed   Int?
+  durationMs   Int?
+  status       String   @default("success") // success | error
   errorMessage String?
-  createdAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
 
   @@index([feature, createdAt])
   @@index([userId, createdAt])
   @@map("ai_results")
 }
 
+// Controlled store-operations boundary. Monetary values are integer minor units.
+model StoreLocation {
+  id         String   @id @default(cuid())
+  code       String   @unique
+  name       String
+  timezone   String
+  currency   String   @default("USD")
+  fiscalMode String   @default("NON_FISCAL_SIMULATION")
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  taxProfiles      TaxProfile[]
+  devices          DeviceEnrollment[]
+  shifts           RegisterShift[]
+  checkouts        OperationalCheckout[]
+  stocks           LocationStock[]
+  giftCards        GiftCardAccount[]
+  exemptions       TaxExemption[]
+  reconciliations  ReconciliationRun[]
+  audits           OperationalAudit[]
+  accountingEvents AccountingOutbox[]
+
+  @@map("store_locations")
+}
+
+model TaxProfile {
+  id               String    @id @default(cuid())
+  locationId       String
+  jurisdictionCode String
+  version          Int
+  roundingMode     String    @default("HALF_UP")
+  effectiveFrom    DateTime
+  effectiveUntil   DateTime?
+  isCertified      Boolean   @default(false)
+  certificationRef String?
+  createdAt        DateTime  @default(now())
+
+  location StoreLocation @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  rules    TaxRule[]
+
+  @@unique([locationId, version])
+  @@index([locationId, effectiveFrom, effectiveUntil])
+  @@map("tax_profiles")
+}
+
+model TaxRule {
+  id           String  @id @default(cuid())
+  taxProfileId String
+  name         String
+  rateBps      Int
+  appliesTo    String  @default("ALL")
+  referenceId  String?
+  priority     Int     @default(100)
+  compound     Boolean @default(false)
+
+  taxProfile TaxProfile @relation(fields: [taxProfileId], references: [id], onDelete: Restrict)
+
+  @@index([taxProfileId, priority])
+  @@map("tax_rules")
+}
+
+model TaxExemption {
+  id              String    @id @default(cuid())
+  locationId      String
+  customerId      String
+  code            String
+  certificateHash String
+  validFrom       DateTime
+  validUntil      DateTime?
+  revokedAt       DateTime?
+  approvedBy      String
+  createdAt       DateTime  @default(now())
+
+  location StoreLocation @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  customer Customer      @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  approver User          @relation("TaxExemptionApprover", fields: [approvedBy], references: [id], onDelete: Restrict)
+
+  @@unique([locationId, customerId, code])
+  @@index([locationId, validFrom, validUntil])
+  @@map("tax_exemptions")
+}
+
+model DeviceEnrollment {
+  id               String    @id @default(cuid())
+  locationId       String
+  deviceId         String    @unique
+  displayName      String
+  kind             String
+  provider         String
+  mode             String
+  capabilities     String[]
+  credentialHash   String
+  status           String    @default("ENROLLED")
+  lastSeenAt       DateTime?
+  disconnectedAt   DateTime?
+  disconnectReason String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  location             StoreLocation         @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  hardwareJobs         HardwareJob[]
+  workstationCheckouts OperationalCheckout[] @relation("CheckoutWorkstation")
+  readerTenders        OperationalTender[]   @relation("TenderReader")
+
+  @@index([locationId, status])
+  @@map("device_enrollments")
+}
+
+model RegisterShift {
+  id                  String    @id @default(cuid())
+  locationId          String
+  userId              String
+  state               String    @default("OPEN")
+  openingCashCents    Int
+  expectedCashCents   Int
+  countedCashCents    Int?
+  varianceCents       Int?
+  managerApprovedBy   String?
+  managerApprovalNote String?
+  openedAt            DateTime  @default(now())
+  closedAt            DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  location        StoreLocation         @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Restrict)
+  managerApprover User?                 @relation("RegisterShiftApprover", fields: [managerApprovedBy], references: [id], onDelete: Restrict)
+  checkouts       OperationalCheckout[]
+  reconciliations ReconciliationRun[]
+
+  @@index([locationId, state])
+  @@index([userId, state])
+  @@map("register_shifts")
+}
+
+model OperationalCheckout {
+  id                String    @id @default(cuid())
+  locationId        String
+  shiftId           String
+  userId            String
+  customerId        String?
+  saleId            String?   @unique
+  idempotencyKey    String
+  source            String    @default("ONLINE")
+  deviceId          String?
+  offlineSequence   Int?
+  capturedAt        DateTime
+  status            String    @default("PAYMENT_PENDING")
+  currency          String
+  subtotalCents     Int
+  discountCents     Int       @default(0)
+  taxCents          Int
+  totalCents        Int
+  taxProfileVersion Int
+  taxSnapshot       Json
+  receiptNumber     String    @unique
+  fiscalStatus      String    @default("NON_FISCAL_SIMULATION")
+  completedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  location             StoreLocation             @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  shift                RegisterShift             @relation(fields: [shiftId], references: [id], onDelete: Restrict)
+  user                 User                      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  customer             Customer?                 @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  sale                 Sale?                     @relation(fields: [saleId], references: [id], onDelete: Restrict)
+  workstation          DeviceEnrollment?         @relation("CheckoutWorkstation", fields: [deviceId], references: [deviceId], onDelete: Restrict)
+  lines                OperationalCheckoutLine[]
+  tenders              OperationalTender[]
+  jobs                 HardwareJob[]
+  receipt              OperationalReceipt?
+  refunds              RefundCase[]
+  giftCardTransactions GiftCardTransaction[]
+
+  @@unique([locationId, idempotencyKey])
+  @@unique([deviceId, offlineSequence])
+  @@index([locationId, status, createdAt])
+  @@map("operational_checkouts")
+}
+
+model OperationalCheckoutLine {
+  id                 String   @id @default(cuid())
+  checkoutId         String
+  productId          String
+  variantId          String?
+  quantityMilliunits Int
+  unitPriceCents     Int
+  discountCents      Int      @default(0)
+  taxCents           Int
+  totalCents         Int
+  taxRuleIds         String[]
+
+  checkout    OperationalCheckout @relation(fields: [checkoutId], references: [id], onDelete: Restrict)
+  product     Product             @relation(fields: [productId], references: [id], onDelete: Restrict)
+  refundLines RefundLine[]
+
+  @@index([checkoutId])
+  @@map("operational_checkout_lines")
+}
+
+model OperationalTender {
+  id             String   @id @default(cuid())
+  checkoutId     String
+  method         String
+  amountCents    Int
+  state          String   @default("PENDING")
+  provider       String?
+  readerDeviceId String?
+  providerRef    String?
+  tokenReference String?
+  cardBrand      String?
+  cardLast4      String?
+  giftCardId     String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  checkout   OperationalCheckout @relation(fields: [checkoutId], references: [id], onDelete: Restrict)
+  reader     DeviceEnrollment?   @relation("TenderReader", fields: [readerDeviceId], references: [deviceId], onDelete: Restrict)
+  giftCard   GiftCardAccount?    @relation(fields: [giftCardId], references: [id], onDelete: Restrict)
+  operations PaymentOperation[]
+
+  @@index([checkoutId, state])
+  @@map("operational_tenders")
+}
+
+model PaymentOperation {
+  id             String   @id @default(cuid())
+  tenderId       String
+  operation      String
+  amountCents    Int
+  state          String
+  idempotencyKey String
+  providerRef    String?
+  requestMeta    Json
+  responseMeta   Json
+  attempts       Int      @default(1)
+  lastErrorCode  String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tender OperationalTender @relation(fields: [tenderId], references: [id], onDelete: Restrict)
+
+  @@unique([tenderId, idempotencyKey])
+  @@index([state, updatedAt])
+  @@map("payment_operations")
+}
+
+model OperationalReceipt {
+  id            String    @id @default(cuid())
+  checkoutId    String    @unique
+  receiptNumber String    @unique
+  content       Json
+  contentHash   String
+  fiscalStatus  String
+  printedAt     DateTime?
+  createdAt     DateTime  @default(now())
+
+  checkout OperationalCheckout @relation(fields: [checkoutId], references: [id], onDelete: Restrict)
+
+  @@map("operational_receipts")
+}
+
+model HardwareJob {
+  id              String    @id @default(cuid())
+  checkoutId      String?
+  deviceId        String
+  jobType         String
+  dedupeKey       String    @unique
+  payload         Json
+  state           String    @default("QUEUED")
+  attempts        Int       @default(0)
+  nextAttemptAt   DateTime  @default(now())
+  claimedAt       DateTime?
+  completedAt     DateTime?
+  lastErrorCode   String?
+  operatorMessage String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  checkout OperationalCheckout? @relation(fields: [checkoutId], references: [id], onDelete: Restrict)
+  device   DeviceEnrollment     @relation(fields: [deviceId], references: [deviceId], onDelete: Restrict)
+
+  @@index([deviceId, state, nextAttemptAt])
+  @@map("hardware_jobs")
+}
+
+model LocationStock {
+  id                 String   @id @default(cuid())
+  locationId         String
+  productId          String
+  variantKey         String   @default("")
+  onHandMilliunits   Int
+  reservedMilliunits Int      @default(0)
+  version            Int      @default(1)
+  updatedAt          DateTime @updatedAt
+
+  location StoreLocation      @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  product  Product            @relation(fields: [productId], references: [id], onDelete: Restrict)
+  events   StockLedgerEvent[]
+
+  @@unique([locationId, productId, variantKey])
+  @@index([locationId, updatedAt])
+  @@map("location_stocks")
+}
+
+model StockLedgerEvent {
+  id                  String   @id @default(cuid())
+  stockId             String
+  deltaMilliunits     Int
+  resultingMilliunits Int
+  reason              String
+  referenceId         String
+  idempotencyKey      String   @unique
+  createdAt           DateTime @default(now())
+
+  stock LocationStock @relation(fields: [stockId], references: [id], onDelete: Restrict)
+
+  @@index([stockId, createdAt])
+  @@map("stock_ledger_events")
+}
+
+model GiftCardAccount {
+  id             String    @id @default(cuid())
+  locationId     String
+  codeHash       String    @unique
+  lastFour       String
+  balanceCents   Int
+  liabilityCents Int
+  status         String    @default("ACTIVE")
+  expiresAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  location     StoreLocation         @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  transactions GiftCardTransaction[]
+  tenders      OperationalTender[]
+
+  @@index([locationId, status])
+  @@map("gift_card_accounts")
+}
+
+model GiftCardTransaction {
+  id                String   @id @default(cuid())
+  giftCardId        String
+  checkoutId        String?
+  type              String
+  amountCents       Int
+  balanceAfterCents Int
+  idempotencyKey    String   @unique
+  createdAt         DateTime @default(now())
+
+  giftCard GiftCardAccount      @relation(fields: [giftCardId], references: [id], onDelete: Restrict)
+  checkout OperationalCheckout? @relation(fields: [checkoutId], references: [id], onDelete: Restrict)
+
+  @@index([giftCardId, createdAt])
+  @@map("gift_card_transactions")
+}
+
+model RefundCase {
+  id             String    @id @default(cuid())
+  checkoutId     String
+  idempotencyKey String
+  amountCents    Int
+  reason         String
+  state          String    @default("PENDING")
+  requestedBy    String
+  approvedBy     String?
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  checkout  OperationalCheckout @relation(fields: [checkoutId], references: [id], onDelete: Restrict)
+  requester User                @relation("RefundRequester", fields: [requestedBy], references: [id], onDelete: Restrict)
+  approver  User?               @relation("RefundApprover", fields: [approvedBy], references: [id], onDelete: Restrict)
+  lines     RefundLine[]
+
+  @@unique([checkoutId, idempotencyKey])
+  @@index([state, createdAt])
+  @@map("refund_cases")
+}
+
+model RefundLine {
+  id                 String @id @default(cuid())
+  refundId           String
+  checkoutLineId     String
+  quantityMilliunits Int
+  amountCents        Int
+
+  refund       RefundCase              @relation(fields: [refundId], references: [id], onDelete: Restrict)
+  checkoutLine OperationalCheckoutLine @relation(fields: [checkoutLineId], references: [id], onDelete: Restrict)
+
+  @@index([refundId])
+  @@map("refund_lines")
+}
+
+model ReconciliationRun {
+  id                    String    @id @default(cuid())
+  locationId            String
+  shiftId               String
+  expectedCashCents     Int
+  countedCashCents      Int
+  cashVarianceCents     Int
+  capturedCardCents     Int
+  refundedCardCents     Int
+  providerSettlementRef String?
+  state                 String
+  managerApprovedBy     String?
+  managerNote           String?
+  createdAt             DateTime  @default(now())
+  completedAt           DateTime?
+
+  location        StoreLocation @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  shift           RegisterShift @relation(fields: [shiftId], references: [id], onDelete: Restrict)
+  managerApprover User?         @relation("ReconciliationApprover", fields: [managerApprovedBy], references: [id], onDelete: Restrict)
+
+  @@unique([shiftId])
+  @@index([locationId, state])
+  @@map("reconciliation_runs")
+}
+
+model AccountingOutbox {
+  id             String    @id @default(cuid())
+  locationId     String
+  eventType      String
+  aggregateType  String
+  aggregateId    String
+  idempotencyKey String    @unique
+  payload        Json
+  state          String    @default("PENDING")
+  attempts       Int       @default(0)
+  externalRef    String?
+  lastErrorCode  String?
+  createdAt      DateTime  @default(now())
+  acknowledgedAt DateTime?
+
+  location StoreLocation @relation(fields: [locationId], references: [id], onDelete: Restrict)
+
+  @@index([locationId, state, createdAt])
+  @@map("accounting_outbox")
+}
+
+model OperationalAudit {
+  id           String   @id @default(cuid())
+  locationId   String
+  sequence     BigInt
+  actorId      String
+  action       String
+  resourceType String
+  resourceId   String
+  outcome      String
+  metadata     Json
+  previousHash String
+  eventHash    String
+  createdAt    DateTime @default(now())
+
+  location StoreLocation @relation(fields: [locationId], references: [id], onDelete: Restrict)
+
+  @@unique([locationId, sequence])
+  @@index([locationId, createdAt])
+  @@map("operational_audits")
+}

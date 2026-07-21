@@ -12,19 +12,28 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    host: '0.0.0.0', // <--- ADD THIS LINE
+    host: '127.0.0.1',
     allowedHosts: [
       'elitepos.chat','www.elitepos.chat'
     ],
     proxy: {
       '/api': {
-        target: 'http://localhost:9000',
+        target: process.env.API_PROXY_TARGET || 'http://127.0.0.1:3041',
+        changeOrigin: true,
+      },
+    },
+  },
+  preview: {
+    host: '127.0.0.1',
+    proxy: {
+      '/api': {
+        target: process.env.API_PROXY_TARGET || 'http://127.0.0.1:3041',
         changeOrigin: true,
       },
     },
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false,
   },
 })

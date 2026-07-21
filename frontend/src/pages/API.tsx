@@ -185,8 +185,8 @@ const API: React.FC = () => {
                 Sign up for an account and generate your API key from the dashboard.
               </p>
               <div className="bg-gray-800 text-green-400 p-4 rounded-lg font-mono text-sm">
-                curl -H "Authorization: Bearer YOUR_API_KEY" \<br />
-                &nbsp;&nbsp;&nbsp;&nbsp;https://api.pospro.com/v1/products
+                This local demonstration does not issue developer API keys. Authenticated
+                endpoints accept only a signed access token returned by the login service.
               </div>
             </div>
 
