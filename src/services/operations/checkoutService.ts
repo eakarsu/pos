@@ -149,7 +149,7 @@ export class CheckoutService {
       }
       await appendOperationalAudit(tx, { locationId: location.id, actorId: actor.id, action: source === 'OFFLINE' ? 'OFFLINE_CHECKOUT_ACCEPTED' : 'CHECKOUT_CREATED', resourceType: 'OperationalCheckout', resourceId: created.id, outcome: 'SUCCESS', metadata: { source, totalCents, taxProfileVersion: taxProfile.version, idempotencyKey: input.idempotencyKey } });
       return created;
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable, maxWait: 20_000, timeout: 60_000 });
 
     const card = checkout.tenders.find((tender) => tender.method === 'CARD_PRESENT');
     if (card) {
@@ -225,7 +225,7 @@ export class CheckoutService {
       await tx.operationalTender.update({ where: { id: card.id }, data: { state: 'REVERSED' } });
       await tx.operationalCheckout.update({ where: { id: checkout.id }, data: { status: 'CANCELLED' } });
       await appendOperationalAudit(tx, { locationId: checkout.locationId, actorId: actor.id, action: 'PAYMENT_REVERSED', resourceType: 'OperationalCheckout', resourceId: checkout.id, outcome: 'SUCCESS', metadata: { amountCents: card.amountCents, provider: result.provider } });
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable, maxWait: 20_000, timeout: 60_000 });
     return { checkout: await this.get(checkout.id), duplicateReversal: false };
   }
 
@@ -240,7 +240,7 @@ export class CheckoutService {
       await tx.operationalTender.update({ where: { id: tenderId }, data: { state: 'RETRY_REQUIRED' } });
       await tx.paymentOperation.updateMany({ where: { tenderId, state: 'PENDING' }, data: { state: 'FAILED', lastErrorCode: code } });
       await appendOperationalAudit(tx, { locationId: checkout.locationId, actorId: 'SYSTEM', action: 'TERMINAL_FAILURE', resourceType: 'OperationalCheckout', resourceId: checkout.id, outcome: 'FAILED', metadata: { code } });
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable, maxWait: 20_000, timeout: 60_000 });
   }
 
   private async applyTerminalResult(checkout: { id: string; locationId: string }, tenderId: string, result: TerminalResult, actorId: string) {
@@ -249,7 +249,7 @@ export class CheckoutService {
       await tx.operationalTender.update({ where: { id: tenderId }, data: { state, provider: result.provider, providerRef: result.providerRef, tokenReference: result.tokenReference, cardBrand: result.cardBrand, cardLast4: result.cardLast4 } });
       await tx.paymentOperation.updateMany({ where: { tenderId, operation: 'CAPTURE' }, data: { state: result.outcome, providerRef: result.providerRef, responseMeta: result.metadata as Prisma.InputJsonValue, lastErrorCode: result.errorCode } });
       await appendOperationalAudit(tx, { locationId: checkout.locationId, actorId, action: `TERMINAL_${result.outcome}`, resourceType: 'OperationalCheckout', resourceId: checkout.id, outcome: result.outcome === 'CAPTURED' ? 'SUCCESS' : 'PENDING', metadata: { provider: result.provider, errorCode: result.errorCode ?? null } });
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable, maxWait: 20_000, timeout: 60_000 });
   }
 
   private async finalize(checkoutId: string, actorId: string): Promise<CheckoutWithDetails> {
@@ -309,6 +309,6 @@ export class CheckoutService {
       await tx.operationalCheckout.update({ where: { id: checkout.id }, data: { status: 'COMPLETED', saleId: sale.id, completedAt: new Date() } });
       await appendOperationalAudit(tx, { locationId: checkout.locationId, actorId, action: 'CHECKOUT_COMPLETED', resourceType: 'OperationalCheckout', resourceId: checkout.id, outcome: 'SUCCESS', metadata: { saleId: sale.id, receiptNumber: checkout.receiptNumber, totalCents: checkout.totalCents } });
       return (await tx.operationalCheckout.findUnique({ where: { id: checkout.id }, include: { lines: true, tenders: true, receipt: true, jobs: true } }))!;
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable, maxWait: 20_000, timeout: 60_000 });
   }
 }

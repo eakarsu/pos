@@ -8,6 +8,7 @@ import elasticityRouter from './elasticity';
 import fraudRouter from './fraud';
 import resultsRouter from './results';
 import upsellRouter from './upsell';
+import operationsReviewRouter from './operationsReview';
 import { authenticateToken } from '../../middleware/auth';
 import { aiRateLimiter } from '../../middleware/aiRateLimiter';
 
@@ -26,5 +27,6 @@ router.use('/elasticity', elasticityRouter);
 router.use('/fraud', fraudRouter);
 router.use('/results', resultsRouter);
 router.use('/upsell', upsellRouter);
+router.use('/operations-review', operationsReviewRouter);
 
 export default router;

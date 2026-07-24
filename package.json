@@ -13,6 +13,7 @@
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
     "create-admin": "tsx scripts/create-admin.ts",
+    "runtime:prepare": "tsx scripts/prepare-runtime-acceptance.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:integration": "jest tests/integration",

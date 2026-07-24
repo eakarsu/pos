@@ -31,7 +31,7 @@ export class RefundService {
       const refund = await tx.refundCase.create({ data: { checkoutId: checkout.id, idempotencyKey: input.idempotencyKey, amountCents, reason: input.reason.trim(), state: 'PENDING_APPROVAL', requestedBy: actor.id, lines: { create: rows } }, include: { lines: true } });
       await appendOperationalAudit(tx, { locationId: checkout.locationId, actorId: actor.id, action: 'REFUND_REQUESTED', resourceType: 'RefundCase', resourceId: refund.id, outcome: 'PENDING_APPROVAL', metadata: { checkoutId: checkout.id, amountCents } });
       return refund;
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable, maxWait: 20_000, timeout: 60_000 });
   }
 
   async approve(actor: Actor, refundId: string) {
@@ -109,6 +109,6 @@ export class RefundService {
       await tx.accountingOutbox.create({ data: { locationId: pending.checkout.locationId, eventType: 'REFUND_COMPLETED', aggregateType: 'RefundCase', aggregateId: pending.id, idempotencyKey: `${pending.id}:accounting:refund`, payload: { checkoutId: pending.checkout.id, returnId: returned.id, amountCents: pending.amountCents, allocations: allocations.map(({ tender, amountCents }) => ({ method: tender.method, amountCents })) } } });
       await appendOperationalAudit(tx, { locationId: pending.checkout.locationId, actorId: actor.id, action: 'REFUND_COMPLETED', resourceType: 'RefundCase', resourceId: pending.id, outcome: 'SUCCESS', metadata: { checkoutId: pending.checkout.id, amountCents: pending.amountCents, returnId: returned.id } });
       return tx.refundCase.findUnique({ where: { id: pending.id }, include: { lines: true } });
-    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable, maxWait: 20_000, timeout: 60_000 });
   }
 }
