@@ -15,7 +15,23 @@ async function main() {
   const usernameBase = email.split('@')[0].replace(/[^a-z0-9._-]/gi, '_').slice(0, 32) || 'administrator';
   const prisma = new PrismaClient();
   try {
-    if (await prisma.user.findUnique({ where: { email } })) throw new Error('Administrator already exists; refusing to overwrite it');
+    const existing = await prisma.user.findUnique({ where: { email } });
+    if (existing) {
+      if (process.env.NODE_ENV === 'production') throw new Error('Administrator already exists; refusing to overwrite it');
+      const user = await prisma.user.update({
+        where: { id: existing.id },
+        data: {
+          firstName: displayName[0] || 'Runtime',
+          lastName: displayName.slice(1).join(' ') || 'Administrator',
+          password: await bcrypt.hash(password, 12),
+          role: 'ADMIN',
+          isActive: true,
+          emailVerified: true,
+        },
+      });
+      console.log(`Reconciled administrator ${user.id}`);
+      return;
+    }
     let username = usernameBase;
     for (let suffix = 1; await prisma.user.findUnique({ where: { username } }); suffix += 1) username = `${usernameBase.slice(0, 27)}_${suffix}`;
     const user = await prisma.user.create({

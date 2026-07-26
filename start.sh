@@ -106,7 +106,7 @@ load_env_file
 : "${OPENROUTER_API_KEY:?OPENROUTER_API_KEY is required}"
 : "${OPENROUTER_MODEL:?OPENROUTER_MODEL is required}"
 [ "${OPENROUTER_BASE_URL:-}" = "https://openrouter.ai/api/v1" ] || { echo 'Exact OPENROUTER_BASE_URL is required' >&2; exit 1; }
-[ "$BACKEND_PORT" = 30944 ] && [ "$FRONTEND_PORT" = 30945 ] || { echo 'Expected assigned ports 30944/30945' >&2; exit 1; }
+[[ "$BACKEND_PORT" =~ ^[0-9]+$ && "$FRONTEND_PORT" =~ ^[0-9]+$ && "$BACKEND_PORT" != "$FRONTEND_PORT" ]] || { echo 'Assigned ports must be distinct numbers' >&2; exit 1; }
 
 [ -d "$project_dir/node_modules" ] || { echo 'Backend dependencies are missing' >&2; exit 1; }
 [ -d "$project_dir/frontend/node_modules" ] || { echo 'Frontend dependencies are missing' >&2; exit 1; }
@@ -119,12 +119,19 @@ done
 children=()
 cleanup() {
   trap - EXIT INT TERM HUP
-  for pid in "${children[@]}"; do kill -TERM "$pid" 2>/dev/null || true; done
-  for pid in "${children[@]}"; do wait "$pid" 2>/dev/null || true; done
+  if ((${#children[@]})); then
+    for pid in "${children[@]}"; do kill -TERM "$pid" 2>/dev/null || true; done
+    for pid in "${children[@]}"; do wait "$pid" 2>/dev/null || true; done
+  fi
 }
 trap cleanup EXIT INT TERM HUP
 
 cd "$project_dir"
+if [[ "${NODE_ENV:-development}" != production && "${ENABLE_DEMO_CREDENTIAL_AUTOFILL:-true}" == true ]]; then
+  npx prisma db push
+  BOOTSTRAP_ACKNOWLEDGEMENT=create-initial-admin npm run create-admin
+  npm run runtime:prepare
+fi
 NODE_ENV=production PORT="$BACKEND_PORT" CORS_ORIGIN="http://127.0.0.1:$FRONTEND_PORT" node dist/server.js &
 children+=("$!")
 API_PROXY_TARGET="http://127.0.0.1:$BACKEND_PORT" npm run preview --prefix frontend -- --host 127.0.0.1 --port "$FRONTEND_PORT" --strictPort &
