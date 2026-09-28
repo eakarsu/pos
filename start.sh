@@ -131,6 +131,7 @@ if [[ "${NODE_ENV:-development}" != production && "${ENABLE_DEMO_CREDENTIAL_AUTO
   npx prisma db push
   BOOTSTRAP_ACKNOWLEDGEMENT=create-initial-admin npm run create-admin
   npm run runtime:prepare
+  npm run build --prefix frontend
 fi
 NODE_ENV=production PORT="$BACKEND_PORT" CORS_ORIGIN="http://127.0.0.1:$FRONTEND_PORT" node dist/server.js &
 children+=("$!")
