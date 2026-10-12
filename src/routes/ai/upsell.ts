@@ -1,6 +1,9 @@
-import { Router, Request, Response } from 'express';
+import { Router, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { callAI, parseAIJson } from '../../services/aiService';
+import { aiRequestScope } from '../../services/aiCancellation';
+import { ownedInsights, saveInsight } from '../../services/aiInsightHistory';
+import type { AuthRequest } from '../../middleware/auth';
 
 /**
  * POST /api/v1/ai/upsell
@@ -24,7 +27,8 @@ interface CartItem {
   qty?: number;
 }
 
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', async (req: AuthRequest, res: Response) => {
+  if (!req.user?.id) return res.status(401).json({ success: false, message: 'Authentication required' });
   const items: CartItem[] = Array.isArray(req.body?.items) ? req.body.items : [];
   const customerId: string | undefined = req.body?.customerId;
 
@@ -34,7 +38,11 @@ router.post('/', async (req: Request, res: Response) => {
       .json({ success: false, message: 'items[] is required and must be non-empty' });
   }
 
+  const scope = aiRequestScope(req, res);
   try {
+    scope.signal.throwIfAborted();
+    if (customerId !== undefined && typeof customerId !== 'string') return res.status(400).json({ success: false, message: 'Choose a saved customer or leave the customer field empty.' });
+    if (items.length > 40 || items.some(item => typeof item?.productId !== 'string' || !item.productId || (item.qty !== undefined && (!Number.isInteger(item.qty) || item.qty < 1 || item.qty > 1000)))) return res.status(400).json({ success: false, message: 'Choose 1-40 saved products with positive whole-number quantities up to 1,000.' });
     const cartProducts = await prisma.product.findMany({
       where: { id: { in: items.map((i) => i.productId) }, isActive: true },
       select: {
@@ -52,6 +60,8 @@ router.post('/', async (req: Request, res: Response) => {
         .status(404)
         .json({ success: false, message: 'No active products matched the cart' });
     }
+
+    if (new Set(items.map(item => item.productId)).size !== cartProducts.length) return res.status(404).json({ success: false, message: 'One or more selected products are unavailable.' });
 
     // Co-purchase signal: sales in the last 90 days that contained any cart product
     const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
@@ -116,6 +126,7 @@ router.post('/', async (req: Request, res: Response) => {
           },
         },
       });
+      if (!customer) return res.status(404).json({ success: false, message: 'The selected customer no longer exists.' });
       if (customer) {
         customerSummary = {
           totalSpent: customer.totalSpent,
@@ -160,63 +171,43 @@ Return ONLY JSON with this schema:
       }, 0),
     };
 
-    let aiResponse: any = null;
-    let aiError: string | null = null;
-    try {
-      const raw = await callAI(systemPrompt, JSON.stringify(aiInput, null, 2));
-      aiResponse = parseAIJson(raw);
-    } catch (e: any) {
-      aiError = e?.message || String(e);
-      console.warn('[ai/upsell] AI call failed:', aiError);
-    }
-
-    // Persist for telemetry / future review
-    await prisma.aiInsight
-      .create({
-        data: {
-          type: 'upsell',
-          payload: JSON.stringify({
-            input: { cartCount: cartProducts.length, candidateCount: topCandidates.length },
-            output: aiResponse,
-            error: aiError,
-          }),
-        },
-      })
-      .catch((err) => console.warn('[ai/upsell] failed to log AiInsight:', err?.message));
-
-    if (!aiResponse) {
-      // Graceful fallback: top-3 highest co-purchase candidates
-      const fallback = topCandidates.slice(0, 3).map((c) => ({
-        productId: c.productId,
-        name: c.name,
-        price: c.price,
-        rationale: `Frequently bought with items in this cart (${c.count} times in last 90 days)`,
-        cashierScript: `Would you like to add ${c.name} for $${c.price.toFixed(2)}?`,
-      }));
-      return res.status(200).json({
-        success: true,
-        data: {
-          recommendations: fallback,
-          skipReason: fallback.length === 0 ? 'No co-purchase data yet' : null,
-          source: 'fallback',
-        },
-      });
-    }
+    const raw = await callAI(systemPrompt, JSON.stringify(aiInput, null, 2), { signal: scope.signal });
+    const aiResponse = parseAIJson(raw);
+    const saved = await saveInsight(prisma, req.user.id, 'upsell', {
+      items: items.map(item => ({ productId: item.productId, qty: item.qty ?? 1 })),
+      ...(customerId ? { customerId } : {}),
+      cartCount: cartProducts.length,
+      candidateCount: topCandidates.length,
+    }, aiResponse, scope.signal);
+    scope.signal.throwIfAborted();
 
     return res.status(200).json({
       success: true,
       data: {
         ...aiResponse,
         source: 'ai',
+        insightId: saved.id,
+        generatedAt: saved.generatedAt,
       },
     });
   } catch (error: any) {
-    console.error('AI upsell error:', error);
-    return res.status(500).json({
+    if (scope.signal.aborted || res.destroyed) return;
+    return res.status(error.status || 502).json({
       success: false,
       message: error?.message || 'Failed to generate upsell recommendations',
     });
-  }
+  } finally { scope.dispose(); }
+});
+
+router.get('/', async (req: AuthRequest, res: Response) => {
+  if (!req.user?.id) return res.status(401).json({ success: false, message: 'Authentication required' });
+  try {
+    const insights = await ownedInsights(prisma, req.user.id, 'upsell', req.query.limit);
+    return res.json({ success: true, data: insights.map(row => {
+      const payload = JSON.parse(row.payload);
+      return { id: row.id, type: row.type, generatedAt: row.generatedAt, input: payload.input, output: payload.output };
+    }) });
+  } catch { return res.status(500).json({ success: false, message: 'Saved upsell reports could not be loaded.' }); }
 });
 
 export default router;

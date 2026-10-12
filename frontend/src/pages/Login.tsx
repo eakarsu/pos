@@ -18,6 +18,10 @@ const Login: React.FC = () => {
     }
   }, [isAuthenticated, isLoading, navigate, user]);
 
+  const demoEmail = import.meta.env.VITE_DEMO_EMAIL;
+  const demoPassword = import.meta.env.VITE_DEMO_PASSWORD;
+  const demoAvailable = Boolean(demoEmail && demoPassword);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -77,13 +81,14 @@ const Login: React.FC = () => {
           <div>
           <button
             type="button"
-            onClick={() => { setEmail(import.meta.env.VITE_DEMO_EMAIL || ''); setPassword(import.meta.env.VITE_DEMO_PASSWORD || ''); }}
-            disabled={!import.meta.env.VITE_DEMO_EMAIL || !import.meta.env.VITE_DEMO_PASSWORD}
-            aria-label="Auto Fill Demo Credentials"
+            onClick={() => { if (demoAvailable) { setEmail(demoEmail); setPassword(demoPassword); } }}
+            disabled={loading || !demoAvailable}
+            aria-label="Fill demo credentials"
             style={{ width: '100%', marginBottom: '12px', padding: '10px 14px', borderRadius: '8px', border: '1px solid currentColor', background: 'transparent', cursor: 'pointer' }}
           >
-            Auto Fill Demo Credentials
+            Fill demo credentials
           </button>
+          {!demoAvailable && <p role="status" className="mb-3 text-sm text-gray-600">Demo credentials are not configured for this frontend. Sign in with an existing account.</p>}
           <button
               type="submit"
               disabled={loading}

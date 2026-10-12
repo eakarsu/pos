@@ -84,7 +84,7 @@ const Products: React.FC = () => {
       const token = localStorage.getItem('accessToken');
       const params = new URLSearchParams({
         page: currentPage.toString(),
-        limit: '10',
+        limit: '20',
         sortBy: sortField,
         sortOrder,
         ...(searchTerm && { search: searchTerm }),
@@ -97,8 +97,8 @@ const Products: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setProducts(data.data.products || []);
-        setTotalPages(data.data.pagination?.pages || 1);
+        setProducts(Array.isArray(data.data?.products) ? data.data.products : []);
+        setTotalPages(data.data?.pagination?.pages || 1);
       }
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -115,7 +115,7 @@ const Products: React.FC = () => {
       });
       if (response.ok) {
         const data = await response.json();
-        setCategories(data.data.categories || []);
+        setCategories(Array.isArray(data.data?.categories) ? data.data.categories : []);
       }
     } catch (error) {
       console.error('Error fetching categories:', error);

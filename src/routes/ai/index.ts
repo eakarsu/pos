@@ -14,9 +14,10 @@ import { aiRateLimiter } from '../../middleware/aiRateLimiter';
 
 const router = Router();
 
-// Apply auth then per-user AI rate limiter (20/hr) to all AI endpoints.
+// Apply auth to every endpoint. Reading a saved report does not consume a
+// generation allowance; history loads several feature collections at once.
 router.use(authenticateToken);
-router.use(aiRateLimiter);
+router.use((req, res, next) => req.method === 'GET' ? next() : aiRateLimiter(req, res, next));
 
 router.use('/insights', insightsRouter);
 router.use('/inventory', inventoryRouter);

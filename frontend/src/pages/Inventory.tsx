@@ -95,8 +95,8 @@ const Inventory: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setInventoryItems(data.data.inventoryItems);
-        setTotalPages(data.data.pagination.pages);
+        setInventoryItems(Array.isArray(data.data?.inventoryItems) ? data.data.inventoryItems : []);
+        setTotalPages(data.data?.pagination?.pages || 1);
       }
     } catch (error) {
       console.error('Error fetching inventory:', error);

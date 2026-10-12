@@ -42,7 +42,9 @@ class ApiService {
 
       return data;
     } catch (error) {
-      console.error('API request failed:', error);
+      if (!(error && typeof error === 'object' && 'name' in error && error.name === 'AbortError')) {
+        console.error('API request failed:', error);
+      }
       throw error;
     }
   }

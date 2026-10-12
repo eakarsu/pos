@@ -89,7 +89,7 @@ const Reports: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setSalesReport(data.data);
+        setSalesReport({ ...data.data, salesByDate: Array.isArray(data.data?.salesByDate) ? data.data.salesByDate : [] });
       }
     } catch (error) {
       console.error('Error fetching sales report:', error);
@@ -110,7 +110,7 @@ const Reports: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setInventoryReport(data.data);
+        setInventoryReport({ ...data.data, lowStockItems: Array.isArray(data.data?.lowStockItems) ? data.data.lowStockItems : [] });
       }
     } catch (error) {
       console.error('Error fetching inventory report:', error);
@@ -131,7 +131,7 @@ const Reports: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        setCustomerReport(data.data);
+        setCustomerReport({ ...data.data, customers: Array.isArray(data.data?.customers) ? data.data.customers : [] });
       }
     } catch (error) {
       console.error('Error fetching customer report:', error);
@@ -461,7 +461,7 @@ const Reports: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {customerReport.customers.slice(0, 10).map((customer) => (
+                  {customerReport.customers.slice(0, 20).map((customer) => (
                     <tr key={customer.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {customer.firstName} {customer.lastName}

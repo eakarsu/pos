@@ -31,9 +31,9 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
       <div className="absolute inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={onClose} />
-      <div className="fixed inset-y-0 right-0 flex max-w-full pl-10">
-        <div className="w-screen max-w-2xl">
-          <div className="flex h-full flex-col bg-white shadow-xl">
+      <div className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none">
+        <div className="w-full max-w-2xl max-h-[85vh] pointer-events-auto">
+          <div role="dialog" aria-modal="true" aria-label={title} className="flex max-h-[85vh] flex-col bg-white shadow-xl rounded-xl overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
               <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
@@ -58,9 +58,11 @@ const DetailPanel: React.FC<DetailPanelProps> = ({
                 )}
                 <button
                   onClick={onClose}
-                  className="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none"
+                  aria-label="Cancel"
+                  className="rounded-md text-gray-600 hover:text-gray-900 focus:outline-none inline-flex items-center gap-2 px-2 py-1.5 text-sm"
                 >
-                  <XMarkIcon className="h-6 w-6" />
+                  <XMarkIcon className="h-5 w-5" />
+                  Cancel
                 </button>
               </div>
             </div>

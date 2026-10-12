@@ -117,13 +117,13 @@ router.get('/stats', async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/v1/dashboard/recent-sales - Last 10 real transactions
+// GET /api/v1/dashboard/recent-sales - Last 20 real transactions
 router.get('/recent-sales', async (req: Request, res: Response) => {
   try {
     const sales = await prisma.sale.findMany({
       where: { status: { not: 'CANCELLED' } },
       orderBy: { createdAt: 'desc' },
-      take: 10,
+      take: 20,
       include: {
         customer: { select: { firstName: true, lastName: true } },
         items: { select: { id: true } },
